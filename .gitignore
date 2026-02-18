@@ -1,0 +1,78 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+out/
+.output/
+.nuxt/
+.next/
+.svelte-kit/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# Package manager locks (keep only one)
+# Uncomment the ones you don't use:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# IDE - VSCode
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# IDE - IntelliJ / WebStorm
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# IDE - Claude Code
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Misc
+*.local
+.temp/
+.tmp/
