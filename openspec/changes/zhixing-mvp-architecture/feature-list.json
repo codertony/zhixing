@@ -1,0 +1,123 @@
+{
+  "change": "zhixing-mvp-architecture",
+  "created_at": "2026-02-19T00:00:00Z",
+  "updated_at": "2026-02-19T00:00:00Z",
+  "status": "in_progress",
+  "current_phase": "apply",
+  "features": [
+    {
+      "id": "F001",
+      "name": "基础设施与工程脚手架",
+      "category": "infrastructure",
+      "tasks": ["1.1", "1.2", "1.3", "1.4", "1.5", "1.6"],
+      "passes": false,
+      "verified_at": null,
+      "evidence": null,
+      "notes": "Monorepo + 数据库 + 工具链配置"
+    },
+    {
+      "id": "F002",
+      "name": "数据模型与数据库 Schema",
+      "category": "data-layer",
+      "tasks": ["2.1", "2.2", "2.3", "2.4", "2.5", "2.6", "2.7"],
+      "passes": false,
+      "verified_at": null,
+      "evidence": null,
+      "notes": "PostgreSQL 表结构设计"
+    },
+    {
+      "id": "F003",
+      "name": "Spec 管理中心后端 API",
+      "category": "backend",
+      "tasks": ["3.1", "3.2", "3.3", "3.4", "3.5"],
+      "passes": false,
+      "verified_at": null,
+      "evidence": null,
+      "notes": "规则 CRUD + 编译 + 权限"
+    },
+    {
+      "id": "F004",
+      "name": "Spec 分发引擎",
+      "category": "backend",
+      "tasks": ["4.1", "4.2", "4.3", "4.4", "4.5"],
+      "passes": false,
+      "verified_at": null,
+      "evidence": null,
+      "notes": "CLAUDE.md 生成 + GitLab 推送"
+    },
+    {
+      "id": "F005",
+      "name": "认知层 MCP 服务",
+      "category": "cognitive-layer",
+      "tasks": ["5.1", "5.2", "5.3", "5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "5.10", "5.11"],
+      "passes": false,
+      "verified_at": null,
+      "evidence": null,
+      "notes": "代码索引 + 语义检索 + MCP 封装"
+    },
+    {
+      "id": "F006",
+      "name": "Spec 管理中心 Web UI",
+      "category": "frontend",
+      "tasks": ["6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7"],
+      "passes": false,
+      "verified_at": null,
+      "evidence": null,
+      "notes": "React 管理界面"
+    },
+    {
+      "id": "F007",
+      "name": "Skill 体系",
+      "category": "backend",
+      "tasks": ["7.1", "7.2", "7.3", "7.4", "7.5"],
+      "passes": false,
+      "verified_at": null,
+      "evidence": null,
+      "notes": "Skill 注册 + 订阅 + 可见性"
+    },
+    {
+      "id": "F008",
+      "name": "CLI 智能体",
+      "category": "cli",
+      "tasks": ["8.1", "8.2", "8.3", "8.4", "8.5", "8.6", "8.7", "8.8"],
+      "passes": false,
+      "verified_at": null,
+      "evidence": null,
+      "notes": "zhixing init/ask/skill 命令"
+    },
+    {
+      "id": "F009",
+      "name": "合规追踪",
+      "category": "compliance",
+      "tasks": ["9.1", "9.2", "9.3", "9.4", "9.5"],
+      "passes": false,
+      "verified_at": null,
+      "evidence": null,
+      "notes": "CI 扫描 + 上报 + 统计"
+    },
+    {
+      "id": "F010",
+      "name": "试点验证",
+      "category": "validation",
+      "tasks": ["10.1", "10.2", "10.3", "10.4", "10.5", "10.6", "10.7"],
+      "passes": false,
+      "verified_at": null,
+      "evidence": null,
+      "notes": "端到端流程验证"
+    }
+  ],
+  "summary": {
+    "total_features": 10,
+    "passed": 0,
+    "failed": 10,
+    "blocked": 0,
+    "in_progress": 0
+  },
+  "verification_criteria": [
+    "端到端测试通过",
+    "API 契约兼容",
+    "代码覆盖率 >= 80%",
+    "无 ESLint 错误",
+    "文档同步更新"
+  ]
+}

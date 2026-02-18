@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Bash",
+      "Read",
+      "Edit",
+      "Write",
+      "WebFetch",
+      "Grep",
+      "Glob",
+      "LS",
+      "MultiEdit",
+      "WebSearch",
+      "Bash(git -C \"E:/workSpace/ZhiXing\" status)",
+      "Bash(git -C \"E:/workSpace/ZhiXing\" log --oneline -3)",
+      "Bash(git -C \"E:/workSpace/ZhiXing\" add .gitignore)",
+      "Bash(git -C:*)",
+      "Bash(dir:*)",
+      "Bash(echo:*)",
+      "Bash(cmd.exe /c:*)",
+      "Bash(git config:*)",
+      "Bash(openspec list:*)",
+      "Bash(openspec new change:*)",
+      "Bash(openspec status:*)",
+      "Bash(openspec instructions proposal:*)",
+      "Bash(openspec instructions design:*)",
+      "Bash(openspec instructions specs:*)",
+      "Bash(openspec instructions tasks:*)"
+    ]
+  }
+}

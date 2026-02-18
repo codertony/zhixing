@@ -1,0 +1,44 @@
+# OpenSpec Change 元数据
+# 格式版本: 1.0
+
+schema: spec-driven
+
+# 变更基本信息
+change:
+  id: zhixing-mvp-architecture
+  name: 知行平台 MVP 架构
+  description: 建立知行平台核心能力，包括 Spec 管理中心、认知层 MCP 服务、CLI 智能体
+
+# 时间线
+created: 2026-02-18
+updated: 2026-02-19
+
+# 当前状态
+# 可能值: explore, design, apply, verify, archive
+status: apply
+phase: apply
+
+# 进度追踪
+progress:
+  total_tasks: 57
+  completed_tasks: 0
+  blocked_tasks: 0
+  last_completed_task: null
+  next_task: "1.1 初始化 Monorepo 项目结构"
+
+# 关联文件
+artifacts:
+  proposal: proposal.md
+  design: design.md
+  specs: specs/
+  tasks: tasks.md
+  features: feature-list.json
+
+# 依赖
+dependencies: []
+
+# 备注
+notes: |
+  这是一个从零开始的 MVP 建设。
+  需要先完成基础设施脚手架（1.x），再逐步构建各层能力。
+  建议按照 tasks.md 中的顺序执行。
