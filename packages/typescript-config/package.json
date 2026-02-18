@@ -1,0 +1,11 @@
+{
+  "name": "@zhixing/typescript-config",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./base.json",
+  "exports": {
+    ".": "./base.json",
+    "./react.json": "./react.json"
+  }
+}

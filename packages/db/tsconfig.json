@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "extends": "@zhixing/typescript-config/base.json",
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
