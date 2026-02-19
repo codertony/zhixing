@@ -10,7 +10,14 @@ import chalk from 'chalk'
 import { initCommand } from './commands/init.js'
 import { askCommand } from './commands/ask.js'
 import { skillCommand } from './commands/skill.js'
-import { loadConfig } from './config.js'
+
+// 配置加载函数（内联实现以避免模块导入问题）
+function loadConfig() {
+  return {
+    apiUrl: process.env.ZHIXING_API_URL || 'http://localhost:3000',
+    projectId: process.env.ZHIXING_PROJECT_ID,
+  }
+}
 
 const program = new Command()
 

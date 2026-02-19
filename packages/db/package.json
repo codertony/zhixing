@@ -24,13 +24,13 @@
     }
   },
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "dotenv -e ../../.env.local -- tsx watch src/index.ts",
     "build": "tsc",
     "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
     "typecheck": "tsc --noEmit",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate:pg",
+    "db:migrate": "drizzle-kit up:pg",
+    "db:push": "drizzle-kit push:pg",
     "db:studio": "drizzle-kit studio",
     "test": "vitest run",
     "test:watch": "vitest"

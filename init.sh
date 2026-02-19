@@ -58,7 +58,26 @@ fi
 echo -e "${YELLOW}[1/6] 检查环境依赖...${NC}"
 command -v node >/dev/null 2>&1 || { echo -e "${RED}错误: 需要 Node.js 20+${NC}"; exit 1; }
 command -v npm >/dev/null 2>&1 || { echo -e "${RED}错误: 需要 npm${NC}"; exit 1; }
-command -v docker >/dev/null 2>&1 || { echo -e "${YELLOW}警告: Docker 未安装，跳过数据库服务${NC}"; SKIP_DB=true; }
+# 检查容器运行时（Docker 或 Podman）
+if command -v docker >/dev/null 2>&1; then
+  CONTAINER_RUNTIME="docker"
+  COMPOSE_CMD="docker-compose"
+elif command -v podman >/dev/null 2>&1; then
+  CONTAINER_RUNTIME="podman"
+  # 检查 podman-compose 或 docker-compose 兼容
+  if command -v podman-compose >/dev/null 2>&1; then
+    COMPOSE_CMD="podman-compose"
+  elif podman compose version >/dev/null 2>&1; then
+    COMPOSE_CMD="podman compose"
+  else
+    echo -e "${YELLOW}警告: 找到 Podman 但未找到 podman-compose，跳过数据库服务${NC}"
+    echo -e "${YELLOW}提示: 安装 podman-compose: pip install podman-compose${NC}"
+    SKIP_DB=true
+  fi
+else
+  echo -e "${YELLOW}警告: Docker/Podman 未安装，跳过数据库服务${NC}"
+  SKIP_DB=true
+fi
 
 NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
 if [ "$NODE_VERSION" -lt 20 ]; then
@@ -96,8 +115,9 @@ if [ "$SKIP_DB" = false ] && [ -f "docker-compose.yml" ]; then
   done
 
   echo -e "${YELLOW}[3/6] 启动数据库服务...${NC}"
-  docker-compose up -d postgres qdrant redis 2>/dev/null || {
-    echo -e "${YELLOW}提示: docker-compose 启动失败，使用已有服务${NC}"
+  echo -e "  使用容器运行时: ${GREEN}${CONTAINER_RUNTIME}${NC}"
+  $COMPOSE_CMD up -d postgres qdrant redis 2>/dev/null || {
+    echo -e "${YELLOW}提示: compose 启动失败，使用已有服务${NC}"
   }
 
   # 等待服务就绪
@@ -130,8 +150,15 @@ fi
 echo -e "${YELLOW}[4/6] 安装依赖...${NC}"
 if [ "$SKIP_DEPS" = false ]; then
   if [ -f "package.json" ]; then
-    npm install --silent
-    echo -e "  ${GREEN}✓ npm install 完成${NC}"
+    # 检查 pnpm 是否可用
+    if command -v pnpm &> /dev/null; then
+      pnpm install
+      echo -e "  ${GREEN}✓ pnpm install 完成${NC}"
+    else
+      echo -e "${YELLOW}警告: pnpm 未安装，尝试使用 npm${NC}"
+      npm install --silent
+      echo -e "  ${GREEN}✓ npm install 完成${NC}"
+    fi
   else
     echo -e "${YELLOW}提示: package.json 不存在，跳过依赖安装${NC}"
   fi

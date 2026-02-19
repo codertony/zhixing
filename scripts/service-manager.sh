@@ -21,7 +21,7 @@ SERVICE_PORTS=(
     ["qdrant"]=6333
     ["redis"]=6379
     ["api"]=3000
-    ["web"]=5173
+    ["web"]=3001
     ["mcp-api"]=3002
 )
 

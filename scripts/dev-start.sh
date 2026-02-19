@@ -70,22 +70,35 @@ start_infrastructure() {
     if [ ${#missing_services[@]} -gt 0 ]; then
         echo -e "\n${YELLOW}📦 步骤 2: 启动基础设施服务${NC}"
 
-        # 检查 Docker
-        if ! command -v docker &> /dev/null; then
-            echo -e "${RED}❌ 错误: Docker 未安装${NC}"
+        # 检查容器运行时（Docker 或 Podman）
+        local CONTAINER_RUNTIME=""
+        local COMPOSE_CMD=""
+
+        if command -v docker &> /dev/null; then
+            CONTAINER_RUNTIME="docker"
+            COMPOSE_CMD="docker-compose"
+        elif command -v podman &> /dev/null; then
+            CONTAINER_RUNTIME="podman"
+            if command -v podman-compose &> /dev/null; then
+                COMPOSE_CMD="podman-compose"
+            elif podman compose version &> /dev/null; then
+                COMPOSE_CMD="podman compose"
+            else
+                echo -e "${RED}❌ 错误: 找到 Podman 但未找到 podman-compose${NC}"
+                echo -e "${YELLOW}提示: 安装 podman-compose: pip install podman-compose${NC}"
+                exit 1
+            fi
+        else
+            echo -e "${RED}❌ 错误: Docker/Podman 未安装${NC}"
             exit 1
         fi
 
-        if ! command -v docker-compose &> /dev/null; then
-            echo -e "${RED}❌ 错误: Docker Compose 未安装${NC}"
-            exit 1
-        fi
-
+        echo -e "  使用容器运行时: ${GREEN}${CONTAINER_RUNTIME}${NC}"
         cd "$PROJECT_ROOT"
 
         # 启动服务
         echo -e "${YELLOW}正在启动: ${missing_services[*]}${NC}"
-        docker-compose up -d "${missing_services[@]}"
+        $COMPOSE_CMD up -d "${missing_services[@]}"
 
         # 等待服务就绪
         echo -e "\n${YELLOW}⏳ 等待服务就绪...${NC}"
@@ -183,9 +196,8 @@ run_migrations() {
 
     # 执行迁移
     echo -e "  ${YELLOW}正在执行数据库迁移...${NC}"
-    cd packages/db
-    pnpm migrate
-    cd ../..
+    cd "$PROJECT_ROOT"
+    pnpm db:migrate
 
     echo -e "  ${GREEN}✓ 数据库迁移完成${NC}"
     log_startup "Database migration completed"
@@ -235,6 +247,9 @@ show_startup_info() {
 
     echo -e "\n${CYAN}📊 快捷命令:${NC}"
     echo -e "  启动所有服务: ${CYAN}pnpm dev${NC}"
+    echo -e "  启动 API:     ${CYAN}pnpm dev:api${NC}"
+    echo -e "  启动 Web:     ${CYAN}pnpm dev:web${NC}"
+    echo -e "  数据库迁移:   ${CYAN}pnpm db:migrate${NC}"
     echo -e "  查看服务状态: ${CYAN}./scripts/service-manager.sh status${NC}"
     echo -e "  查看启动记录: ${CYAN}./scripts/service-manager.sh log${NC}"
     echo -e "  停止基础设施: ${CYAN}docker-compose down${NC}"
@@ -243,7 +258,38 @@ show_startup_info() {
     echo -e "  启动日志: ${STARTUP_LOG}"
     echo -e "  服务记录: ${SERVICE_LOG_FILE}"
 
+    echo -e "\n${GREEN}下一步:${NC}"
+    echo -e "  1. 配置 .env.local 中的 OPENAI_API_KEY（如尚未配置）"
+    echo -e "  2. 运行 ${CYAN}pnpm dev${NC} 启动所有服务"
+    echo -e "  3. 访问 ${CYAN}http://localhost:5173${NC} 打开 Web 控制台"
+
     log_startup "Startup info displayed successfully"
+}
+
+# 检查环境变量
+check_env_file() {
+    echo -e "\n${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${BLUE}🔍 步骤 4: 检查环境变量配置${NC}"
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+    cd "$PROJECT_ROOT"
+
+    if [ -f ".env.local" ]; then
+        echo -e "  ${GREEN}✓ .env.local 文件存在${NC}"
+
+        # 检查关键环境变量
+        if grep -q "OPENAI_API_KEY.*your-" .env.local 2>/dev/null; then
+            echo -e "  ${YELLOW}⚠ 请编辑 .env.local 配置 OPENAI_API_KEY${NC}"
+        fi
+    else
+        echo -e "  ${YELLOW}⚠ .env.local 文件不存在${NC}"
+        if [ -f ".env.example" ]; then
+            cp .env.example .env.local
+            echo -e "  ${GREEN}✓ 已创建 .env.local（请编辑并配置 API 密钥）${NC}"
+        else
+            echo -e "  ${RED}✗ .env.example 也不存在${NC}"
+        fi
+    fi
 }
 
 # 主函数
@@ -257,6 +303,7 @@ main() {
     start_infrastructure
     check_node_environment
     install_dependencies
+    check_env_file
     run_migrations
     show_startup_info
 
