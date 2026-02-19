@@ -2,7 +2,7 @@
  * 数据库连接测试脚本
  */
 
-import { db, closeConnection, healthCheck } from './connection';
+import { db, closeConnection, healthCheck } from './connection/index.js';
 
 async function testConnection() {
   console.log('测试数据库连接...');

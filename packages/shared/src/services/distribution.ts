@@ -3,7 +3,7 @@
  */
 
 import { GitLabClient, createGitLabClient } from '@zhixing/gitlab-client';
-import { specCompiler } from './spec-compiler';
+import { specCompiler } from './spec-compiler.js';
 import { db } from '@zhixing/db';
 import { distributionLogs, projects } from '@zhixing/db/schema';
 import { eq } from 'drizzle-orm';

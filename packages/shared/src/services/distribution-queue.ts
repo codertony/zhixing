@@ -3,7 +3,7 @@
  * 负责管理分发任务队列，支持准实时推送和重试机制
  */
 
-import { distributionService } from './distribution';
+import { distributionService } from './distribution.js';
 import { db } from '@zhixing/db';
 import { specRules, projects, specOverrides } from '@zhixing/db/schema';
 import { eq, and, inArray } from 'drizzle-orm';

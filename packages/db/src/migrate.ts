@@ -3,7 +3,7 @@
  * 用于手动创建数据库表结构
  */
 
-import { db } from './connection';
+import { db } from './connection/index.js';
 import { sql } from 'drizzle-orm';
 
 async function runMigration() {

@@ -13,8 +13,8 @@ import type {
   CreateFileOptions,
   UpdateFileOptions,
   GetFileOptions,
-} from './types';
-import { GitLabError } from './errors';
+} from './types.js';
+import { GitLabError } from './errors.js';
 
 /**
  * GitLab API 客户端
@@ -294,7 +294,7 @@ export class GitLabClient {
       await this.getFile(projectPath, 'CLAUDE.md', { ref: branch });
       exists = true;
     } catch (error) {
-      if (error instanceof GitLabError && error.statusCode === 404) {
+      if (error instanceof GitLabError && (error as GitLabError).statusCode === 404) {
         exists = false;
       } else {
         throw error;

@@ -5,8 +5,7 @@
 import { db } from '@zhixing/db';
 import { users, userDomains, userProjects, domains, projects } from '@zhixing/db/schema';
 import { eq, and } from 'drizzle-orm';
-
-export type UserRole = 'admin' | 'domain_admin' | 'project_admin' | 'developer';
+import type { UserRole } from '../types/index.js';
 
 export interface Permission {
   canRead: boolean;

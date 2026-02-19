@@ -15,6 +15,7 @@ export interface CompiledRule {
   level: 'company' | 'domain' | 'project';
   content: string;
   source: string;
+  domainId?: string;
   overridden?: boolean;
   overrideReason?: string;
 }
