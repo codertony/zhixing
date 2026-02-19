@@ -36,10 +36,10 @@ const listCommand = new Command('list')
         visibility: string
         version: number
       }) => {
-        const typeColor = skill.type === 'mcp_tool' ? 'blue' :
-                          skill.type === 'prompt_template' ? 'green' : 'purple'
+        const typeColor = skill.type === 'mcp_tool' ? chalk.blue :
+                          skill.type === 'prompt_template' ? chalk.green : chalk.magenta
         console.log(chalk.bold(`${skill.name}`) + chalk.gray(` v${skill.version}`))
-        console.log(chalk[typeColor](`  [${skill.type}]`) + chalk.gray(` ${skill.visibility}`))
+        console.log(typeColor(`  [${skill.type}]`) + chalk.gray(` ${skill.visibility}`))
         console.log(chalk.gray(`  ${skill.description}\n`))
       })
 
@@ -97,8 +97,9 @@ const addCommand = new Command('add')
       // 更新本地 MCP 配置
       if (skill.type === 'mcp_tool') {
         const mcpConfig = readMcpConfig()
+        const mcpServers = (mcpConfig.mcpServers as Record<string, unknown> | undefined) || {}
         mcpConfig.mcpServers = {
-          ...mcpConfig.mcpServers,
+          ...mcpServers,
           [`skill-${skill.name}`]: {
             command: 'npx',
             args: ['-y', `@zhixing/skill-${skill.name}`],

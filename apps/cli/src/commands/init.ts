@@ -93,8 +93,9 @@ function setupMcpConfig(projectId: string): void {
   const mcpConfig = readMcpConfig()
 
   // 添加认知层 MCP Server
+  const mcpServers = (mcpConfig.mcpServers as Record<string, unknown> | undefined) || {}
   mcpConfig.mcpServers = {
-    ...mcpConfig.mcpServers,
+    ...mcpServers,
     'zhixing-cognitive': {
       command: 'npx',
       args: ['-y', '@zhixing/mcp-server'],
