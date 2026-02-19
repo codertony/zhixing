@@ -1,0 +1,30 @@
+{
+  "project": {
+    "name": "pilot-java-service",
+    "description": "知行平台试点 Java 后端项目",
+    "gitlabPath": "backend/pilot-java-service",
+    "domain": "backend",
+    "subscriptions": ["backend", "infrastructure", "security"]
+  },
+  "specs": {
+    "company": [
+      "api-response-format",
+      "logging-standards",
+      "exception-handling",
+      "database-access",
+      "code-documentation"
+    ],
+    "domain": [
+      "microservice-guidelines",
+      "api-versioning"
+    ],
+    "project": [
+      "project-specific-rules"
+    ]
+  },
+  "skills": [
+    "java-code-review",
+    "spring-boot-best-practices",
+    "api-design-assistant"
+  ]
+}

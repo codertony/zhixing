@@ -1,0 +1,48 @@
+# 知行平台合规扫描 GitLab CI 配置示例
+# 适用于试点项目
+
+stages:
+  - compliance
+  - build
+  - test
+
+# 阶段 1: 知行合规扫描
+zhixing-compliance:
+  stage: compliance
+  image: node:20-alpine
+  variables:
+    ZHIXING_API_BASE: "https://api.zhixing.example.com"
+  before_script:
+    - npm install -g @zhixing/cli
+    - zhixing --version
+  script:
+    # 检查 CLAUDE.md 版本一致性
+    - zhixing status
+    # 运行合规扫描并上报
+    - zhixing compliance check --report
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  allow_failure: false
+
+# 阶段 2: 构建（示例：Java Maven 项目）
+build:
+  stage: build
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - mvn clean compile -DskipTests
+  artifacts:
+    paths:
+      - target/
+    expire_in: 1 hour
+
+# 阶段 3: 测试
+test:
+  stage: test
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - mvn test
+  artifacts:
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
