@@ -1,0 +1,178 @@
+# 认知层 MCP Server K8s 部署配置
+# 任务 5.11: 部署认知层 MCP Server 至 K8s 集群
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zhixing-mcp-server
+  namespace: zhixing
+  labels:
+    app: zhixing-mcp-server
+    component: cognitive-layer
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zhixing-mcp-server
+  template:
+    metadata:
+      labels:
+        app: zhixing-mcp-server
+        component: cognitive-layer
+    spec:
+      containers:
+        - name: mcp-server
+          image: zhixing/mcp-server:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3002
+              name: http-api
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: MCP_SERVER_NAME
+              value: "zhixing-cognitive"
+            - name: MCP_SERVER_VERSION
+              value: "0.1.0"
+            - name: ENABLE_HTTP_API
+              value: "true"
+            - name: MCP_API_PORT
+              value: "3002"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: zhixing-db-secret
+                  key: url
+            - name: QDRANT_URL
+              value: "http://qdrant:6333"
+            - name: QDRANT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: zhixing-qdrant-secret
+                  key: api-key
+            - name: GITLAB_URL
+              value: "${GITLAB_URL}"
+            - name: GITLAB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: zhixing-gitlab-secret
+                  key: token
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: zhixing-openai-secret
+                  key: api-key
+            - name: OPENAI_BASE_URL
+              value: "${OPENAI_BASE_URL}"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 2
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zhixing-mcp-server
+  namespace: zhixing
+  labels:
+    app: zhixing-mcp-server
+spec:
+  type: ClusterIP
+  selector:
+    app: zhixing-mcp-server
+  ports:
+    - port: 3002
+      targetPort: 3002
+      protocol: TCP
+      name: http-api
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: zhixing-mcp-server
+  namespace: zhixing
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: mcp.zhixing.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: zhixing-mcp-server
+                port:
+                  number: 3002
+---
+# Horizontal Pod Autoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: zhixing-mcp-server
+  namespace: zhixing
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: zhixing-mcp-server
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60

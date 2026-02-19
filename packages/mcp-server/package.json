@@ -14,8 +14,14 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.27.0",
     "@modelcontextprotocol/sdk": "^1.0.0",
+    "@qdrant/js-client-rest": "^1.9.0",
     "fastify": "^4.26.0",
+    "openai": "^4.0.0",
+    "tree-sitter": "^0.21.0",
+    "tree-sitter-java": "^0.21.0",
+    "tree-sitter-typescript": "^0.21.0",
     "@zhixing/db": "workspace:*",
+    "@zhixing/gitlab-client": "workspace:*",
     "@zhixing/shared": "workspace:*"
   },
   "devDependencies": {

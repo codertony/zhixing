@@ -9,6 +9,8 @@ import { specRulesRoutes } from './routes/spec-rules';
 import { projectsRoutes } from './routes/projects';
 import { healthRoutes } from './routes/health';
 import { distributionRoutes } from './routes/distribution';
+import { complianceRoutes } from './routes/compliance';
+import { skillsRoutes } from './routes/skills';
 import { distributionQueueService } from '@zhixing/shared';
 
 const PORT = parseInt(process.env.PORT ?? '3000', 10);
@@ -39,6 +41,8 @@ async function start() {
   await fastify.register(specRulesRoutes, { prefix: '/api/specs' });
   await fastify.register(projectsRoutes, { prefix: '/api' });
   await fastify.register(distributionRoutes, { prefix: '/api/distribution' });
+  await fastify.register(complianceRoutes, { prefix: '/api/compliance' });
+  await fastify.register(skillsRoutes, { prefix: '/api/skills' });
 
   // 全局错误处理
   fastify.setErrorHandler((error, request, reply) => {

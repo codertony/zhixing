@@ -1,0 +1,73 @@
+# 知行平台本地开发环境
+# 包含 PostgreSQL 和 Qdrant 向量数据库
+
+version: '3.8'
+
+services:
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:16-alpine
+    container_name: zhixing-postgres
+    environment:
+      POSTGRES_USER: zhixing
+      POSTGRES_PASSWORD: zhixing_dev_password
+      POSTGRES_DB: zhixing
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zhixing"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - zhixing-network
+
+  # Qdrant 向量数据库
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: zhixing-qdrant
+    ports:
+      - "6333:6333"  # REST API
+      - "6334:6334"  # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__HTTP_PORT: 6333
+      QDRANT__SERVICE__GRPC_PORT: 6334
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - zhixing-network
+
+  # Redis (可选，用于缓存和队列)
+  redis:
+    image: redis:7-alpine
+    container_name: zhixing-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - zhixing-network
+
+volumes:
+  postgres_data:
+    driver: local
+  qdrant_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  zhixing-network:
+    driver: bridge

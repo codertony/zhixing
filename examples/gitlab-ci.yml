@@ -1,0 +1,77 @@
+# GitLab CI 集成示例
+# 任务 9.3: 引入合规扫描步骤到 CI 流水线
+
+stages:
+  - lint
+  - test
+  - compliance
+  - deploy
+
+variables:
+  # 知行平台配置
+  ZHIXING_API_BASE: "https://zhixing-api.company.com"
+  # ZHIXING_PROJECT_TOKEN 应该在 CI/CD Variables 中设置
+
+# 代码规范检查
+lint:
+  stage: lint
+  image: node:20-alpine
+  script:
+    - npm ci
+    - npm run lint
+  only:
+    - merge_requests
+    - main
+
+# 单元测试
+test:
+  stage: test
+  image: node:20-alpine
+  script:
+    - npm ci
+    - npm run test
+  only:
+    - merge_requests
+    - main
+
+# 合规扫描
+# 任务 9.3: CI 合规静态扫描
+compliance_scan:
+  stage: compliance
+  image: alpine:latest
+  variables:
+    CLAUDE_MD_PATH: "CLAUDE.md"
+  before_script:
+    - apk add --no-cache curl bash git
+  script:
+    - |
+      echo "🔍 执行合规扫描..."
+      curl -sSL "${ZHIXING_API_BASE}/scripts/ci-compliance-scan.sh" | bash
+  rules:
+    # MR 时执行
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    # main 分支提交时执行
+    - if: $CI_COMMIT_BRANCH == "main"
+  allow_failure: true  # 第一期只上报不拦截
+
+# 构建和部署（原有流程）
+build:
+  stage: deploy
+  image: node:20-alpine
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "部署到生产环境"
+  only:
+    - main
+  when: manual
