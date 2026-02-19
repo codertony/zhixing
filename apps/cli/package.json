@@ -1,16 +1,26 @@
 {
   "name": "@zhixing/cli",
   "version": "0.1.0",
-  "private": true,
+  "description": "知行智能研发认知操作平台 CLI 工具",
   "type": "module",
   "bin": {
     "zhixing": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "dev": "ts-node-esm src/index.ts",
     "build": "tsc",
     "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "restricted"
   },
   "dependencies": {
     "commander": "^12.0.0",

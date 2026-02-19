@@ -74,7 +74,7 @@
 - [x] 8.5 实现 `zhixing skill list` 命令：列出平台可用 Skill（过滤当前项目可见范围）
 - [x] 8.6 实现 `zhixing skill add <name>` 命令：订阅 Skill 并写入项目 MCP 配置
 - [x] 8.7 实现大模型中转代理配置读取（`ZHIXING_API_BASE` 环境变量或 `~/.zhixing/config.json`）
-- [ ] 8.8 发布 CLI 至内部 npm registry，验证安装与使用流程
+- [x] 8.8 发布 CLI 至内部 npm registry，验证安装与使用流程
 
 ## 9. 合规追踪
 
@@ -86,10 +86,10 @@
 
 ## 10. 试点验证（端到端）
 
-- [ ] 10.1 选定试点 Java 后端仓库，完成 `zhixing init` 接入，验证 `CLAUDE.md` 生成正确
-- [ ] 10.2 完成试点仓库首次全量代码索引，验证认知层问答基本可用
-- [ ] 10.3 迁移试点项目现有 `CLAUDE.md` 内容至平台项目级规则
-- [ ] 10.4 在试点项目中录入公司级基础规则（至少 5 条），验证三层编译与分发
-- [ ] 10.5 试点开发者完成一个增量 feature 的端到端流程：`zhixing ask` 理解上下文 → AI 编程工具基于规范实现功能
-- [ ] 10.6 接入 CI 合规扫描，验证 override 事件上报链路
-- [ ] 10.7 收集试点反馈，记录 Open Questions（来自 design.md Q1-Q4）的实测答案
+- [x] 10.1 选定试点 Java 后端仓库，完成 `zhixing init` 接入，验证 `CLAUDE.md` 生成正确
+- [x] 10.2 完成试点仓库首次全量代码索引，验证认知层问答基本可用
+- [x] 10.3 迁移试点项目现有 `CLAUDE.md` 内容至平台项目级规则
+- [x] 10.4 在试点项目中录入公司级基础规则（至少 5 条），验证三层编译与分发
+- [x] 10.5 试点开发者完成一个增量 feature 的端到端流程：`zhixing ask` 理解上下文 → AI 编程工具基于规范实现功能
+- [x] 10.6 接入 CI 合规扫描，验证 override 事件上报链路
+- [x] 10.7 收集试点反馈，记录 Open Questions（来自 design.md Q1-Q4）的实测答案
