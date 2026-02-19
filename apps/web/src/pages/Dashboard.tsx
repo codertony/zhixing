@@ -89,8 +89,8 @@ export default function Dashboard() {
           >
             <div className="p-5">
               <div className="flex items-center">
-                <div className={`flex-shrink-0 ${card.color} rounded-md p-3`}>
-                  <card.icon className="h-6 w-6 text-white" />
+  <div className={`flex-shrink-0 ${card.color} rounded-md p-2`}>
+                  <card.icon className="h-5 w-5 text-white" />
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>

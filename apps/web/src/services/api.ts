@@ -35,7 +35,7 @@ api.interceptors.response.use(
 
 // API 方法
 export const rulesApi = {
-  getRules: (params?: { level?: string; domainId?: string }) =>
+  getRules: (params?: { level?: string; domainId?: string; projectId?: string }) =>
     api.get('/api/specs/rules', { params }),
   getRule: (id: string) => api.get(`/api/specs/rules/${id}`),
   createRule: (data: unknown) => api.post('/api/specs/rules', data),
