@@ -98,11 +98,18 @@ Anthropic 推荐将 Agent 分为两个角色：
 2. 创建 .progress.md 进度日志文件
 3. 基于 /opsx:new 流程创建初始 artifacts（proposal, specs, design, tasks）
 4. 创建初始 git commit，记录添加的文件
+5. 创建 scripts/service-manager.sh 服务管理工具
+
+服务启动规则（必须遵守）：
+- 启动前必须检测服务是否已启动（端口占用检查）
+- 启动前必须检测服务健康状态
+- 启动后必须记录服务地址和端口号到日志
 
 约束：
 - 使用 JSON 格式存储功能清单（比 Markdown 更稳定，不易被误改）
 - 每个任务包含明确的验证步骤
 - 设置清晰的 "passes: false" 状态字段
+- 所有服务启动必须使用 service-manager.sh 工具
 ```
 
 #### 2. 编码 Agent (Coding Agent)
@@ -212,6 +219,59 @@ Anthropic 推荐将 Agent 分为两个角色：
 | 可恢复性 | 任何中断都能从检查点恢复 | `/opsx:continue` |
 | 测试驱动 | 功能必须测试验证后才能标记完成 | `/opsx:verify` |
 
+#### 服务启动规则（强制）
+
+**每次启动服务前必须执行以下步骤**：
+
+1. **检测服务是否已启动**
+   ```bash
+   ./scripts/service-manager.sh status
+   ```
+   - 检查端口是否被占用
+   - 检查服务是否健康
+   - 如服务已在运行且健康，跳过启动
+
+2. **检测服务是否正常**
+   ```bash
+   ./scripts/service-manager.sh health <服务名>
+   ```
+   - PostgreSQL: `pg_isready` 或 TCP 连通性测试
+   - Qdrant: HTTP `/healthz` 端点检查
+   - Redis: `redis-cli ping` 测试
+   - API/Web: HTTP 健康检查
+
+3. **记录启动服务的地址和端口号**
+   - 所有启动操作自动记录到 `~/.zhixing/logs/services.log`
+   - 记录格式: `时间|服务名|操作|地址|状态|PID`
+   - 使用 `./scripts/service-manager.sh log` 查看记录
+
+**服务端口配置**：
+
+| 服务 | 端口 | 地址 | 健康检查方式 |
+|------|------|------|-------------|
+| PostgreSQL | 5432 | localhost:5432 | pg_isready |
+| Qdrant | 6333 | localhost:6333 | HTTP GET /healthz |
+| Redis | 6379 | localhost:6379 | redis-cli ping |
+| API 服务 | 3000 | localhost:3000 | HTTP GET /health |
+| MCP API | 3002 | localhost:3002 | HTTP GET /health |
+| Web 前端 | 5173 | localhost:5173 | HTTP GET / |
+
+**启动脚本使用规范**：
+
+```bash
+# 1. 初始化器 Agent 首次设置
+./init.sh                    # 基础环境初始化
+./scripts/dev-start.sh       # 完整开发环境启动（带检测）
+
+# 2. 编码 Agent 每次会话启动
+./scripts/service-manager.sh status   # 检查服务状态
+./scripts/dev-start.sh                # 启动缺失的服务
+
+# 3. 查看服务记录
+./scripts/service-manager.sh log      # 查看启动历史
+./scripts/service-manager.sh status   # 查看当前状态
+```
+
 #### 进度文件规范
 
 `.progress.md` 文件格式：
@@ -276,6 +336,217 @@ Anthropic 推荐将 Agent 分为两个角色：
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## 测试驱动开发规范（TDD）
+
+### 核心原则
+
+> **任何功能实现必须伴随相应的测试用例**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    测试驱动开发流程                              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Red ──▶ Green ──▶ Refactor                                    │
+│                                                                 │
+│  1. Red: 编写失败的测试                                         │
+│     - 明确功能需求和边界条件                                    │
+│     - 编写测试用例（此时应失败）                                │
+│                                                                 │
+│  2. Green: 实现功能使测试通过                                   │
+│     - 编写最少代码使测试通过                                    │
+│     - 不追求完美，先让测试变绿                                  │
+│                                                                 │
+│  3. Refactor: 重构代码                                          │
+│     - 保持测试通过的前提下优化代码                              │
+│     - 提高可读性、性能和可维护性                                │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 测试文件组织规范
+
+| 目录 | 用途 | 示例 |
+|------|------|------|
+| `packages/<name>/src/**/*.test.ts` | 单元测试 | `client.test.ts` |
+| `apps/<name>/src/**/*.test.ts` | 应用测试 | `api.test.ts` |
+| `packages/<name>/src/**/*.spec.ts` | 集成测试 | `integration.spec.ts` |
+| `e2e/**/*.test.ts` | E2E 测试 | `workflow.test.ts` |
+
+### 测试用例编写规范
+
+#### 1. 命名规范
+
+```typescript
+// 使用描述性命名，说明测试的场景和预期结果
+describe('GitLabClient', () => {
+  describe('pushClaudeMd', () => {
+    it('当文件不存在时应该创建新文件', async () => {});
+    it('当文件存在时应该更新文件', async () => {});
+    it('应该使用默认提交信息', async () => {});
+  });
+});
+```
+
+#### 2. 测试结构（AAA 模式）
+
+```typescript
+it('应该成功分发到项目', async () => {
+  // Arrange: 准备测试数据
+  const projectId = 'project-1';
+  const triggerReason = 'Rule updated';
+  mockDbSelect.mockReturnValue({...});
+  mockPushClaudeMd.mockResolvedValue({ id: 'commit-123' });
+
+  // Act: 执行被测操作
+  const result = await service.distributeToProject(projectId, triggerReason);
+
+  // Assert: 验证结果
+  expect(result.success).toBe(true);
+  expect(result.commitSha).toBe('commit-123');
+});
+```
+
+#### 3. 测试覆盖率要求
+
+| 模块类型 | 语句覆盖 | 分支覆盖 | 函数覆盖 |
+|---------|---------|---------|---------|
+| 核心服务 | ≥ 90% | ≥ 85% | ≥ 90% |
+| API 路由 | ≥ 80% | ≥ 75% | ≥ 80% |
+| 工具函数 | ≥ 90% | ≥ 80% | ≥ 90% |
+| CLI 命令 | ≥ 70% | ≥ 60% | ≥ 70% |
+
+### Mock 使用规范
+
+#### 推荐：使用 vi.hoisted 进行模块 Mock
+
+```typescript
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// 在顶部使用 vi.hoisted 定义 mock
+const mockPushClaudeMd = vi.hoisted(() => vi.fn());
+
+// Mock 整个模块
+vi.mock('@zhixing/gitlab-client', () => ({
+  createGitLabClient: vi.fn().mockReturnValue({
+    pushClaudeMd: mockPushClaudeMd,
+  }),
+}));
+
+// 动态导入被测模块（确保 mock 先执行）
+const { DistributionService } = await import('./distribution.js');
+```
+
+#### Mock 数据库查询
+
+```typescript
+const mockDbSelect = vi.hoisted(() => vi.fn());
+
+vi.mock('@zhixing/db', () => ({
+  db: {
+    select: mockDbSelect.mockReturnThis(),
+    from: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+  },
+}));
+```
+
+### 测试运行命令
+
+```bash
+# 运行所有测试
+pnpm test
+
+# 运行指定包的测试
+pnpm test packages/
+
+# 运行特定测试文件
+pnpm test packages/shared/src/services/permission.test.ts
+
+# 监听模式（开发时使用）
+pnpm test:watch
+
+# 生成覆盖率报告
+pnpm test:coverage
+
+# 打开覆盖率 UI
+pnpm test:ui
+```
+
+### 新增功能时的测试清单
+
+**在实现新功能前，必须创建测试用例覆盖以下场景：**
+
+- [ ] **正常路径**：标准输入下的预期行为
+- [ ] **边界条件**：空值、最大值、最小值等
+- [ ] **错误处理**：异常输入、网络失败、权限不足
+- [ ] **状态变化**：数据修改后的状态验证
+- [ ] **集成点**：与外部服务/数据库的交互
+
+**示例：为一个服务编写测试**
+
+```typescript
+describe('PermissionService', () => {
+  // 1. 构造函数和依赖注入测试
+  describe('构造函数', () => {...});
+
+  // 2. 正常场景测试
+  describe('hasCompanyPermission', () => {
+    it('应该返回 true 当用户是 admin', async () => {...});
+    it('应该返回 false 当用户不是 admin', async () => {...});
+  });
+
+  // 3. 边界条件测试
+  describe('边界条件', () => {
+    it('应该返回 false 当用户不存在', async () => {...});
+    it('应该处理空字符串用户ID', async () => {...});
+  });
+
+  // 4. 多角色组合测试
+  describe('权限组合', () => {
+    it('admin 应该拥有所有权限', async () => {...});
+    it('domain_admin 应该拥有读写权限', async () => {...});
+  });
+});
+```
+
+### 测试作为文档
+
+测试用例应该清晰说明功能行为，成为活文档：
+
+```typescript
+// 好的示例 - 清晰说明业务规则
+it('应该拒绝未订阅领域的检索请求（跨领域隔离规则）', async () => {
+  const result = await retrievalService.search('query', {
+    projectId: 'project-1',
+    domainFilter: ['unsubscribed-domain']
+  });
+  expect(result.items).toHaveLength(0);
+});
+
+// 差的示例 - 不清楚测试什么
+it('测试搜索', async () => {
+  const r = await service.search('test');
+  expect(r).toBeDefined();
+});
+```
+
+### 现有测试参考
+
+项目已实现的测试套件：
+
+| 测试文件 | 覆盖功能 | 测试数 |
+|---------|---------|-------|
+| `packages/gitlab-client/src/client.test.ts` | GitLab API 客户端 | 25 |
+| `packages/shared/src/services/permission.test.ts` | 权限服务 | 21 |
+| `packages/shared/src/services/distribution.test.ts` | 分发服务 | 10 |
+| `packages/shared/src/services/spec-compiler.test.ts` | Spec 编译器 | 7 |
+
+**参考这些测试文件编写新功能的测试用例。**
 
 **强制指令示例**：
 
