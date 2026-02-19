@@ -9,7 +9,14 @@
     "dev": "tsc --watch",
     "build": "tsc",
     "lint": "eslint . --ext ts --report-unused-disable-directives --max-warnings 0",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@zhixing/db": "workspace:*",
+    "@zhixing/gitlab-client": "workspace:*",
+    "drizzle-orm": "^0.29.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
