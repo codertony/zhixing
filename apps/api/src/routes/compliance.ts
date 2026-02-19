@@ -6,7 +6,7 @@
 import { FastifyInstance } from 'fastify';
 import { db, complianceReports, specOverrides, highFrequencyOverrides, projects, specRules } from '@zhixing/db';
 import { eq, and, gte, lte, desc, sql, count } from 'drizzle-orm';
-import { verifyProjectToken } from '../middleware/auth';
+import { verifyProjectToken } from '../middleware/auth.js';
 
 export async function complianceRoutes(fastify: FastifyInstance) {
   // 9.1 合规上报 REST API

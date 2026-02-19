@@ -5,12 +5,12 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
-import { specRulesRoutes } from './routes/spec-rules';
-import { projectsRoutes } from './routes/projects';
-import { healthRoutes } from './routes/health';
-import { distributionRoutes } from './routes/distribution';
-import { complianceRoutes } from './routes/compliance';
-import { skillsRoutes } from './routes/skills';
+import { specRulesRoutes } from './routes/spec-rules.js';
+import { projectsRoutes } from './routes/projects.js';
+import { healthRoutes } from './routes/health.js';
+import { distributionRoutes } from './routes/distribution.js';
+import { complianceRoutes } from './routes/compliance.js';
+import { skillsRoutes } from './routes/skills.js';
 import { distributionQueueService } from '@zhixing/shared';
 
 const PORT = parseInt(process.env.PORT ?? '3000', 10);
