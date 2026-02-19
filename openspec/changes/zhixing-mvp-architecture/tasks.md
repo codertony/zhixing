@@ -2,10 +2,10 @@
 
 - [x] 1.1 初始化 Monorepo 项目结构（Turborepo），划分 `apps/web`、`apps/cli`、`packages/mcp-server`、`packages/db` 等工作区
 - [x] 1.2 配置 TypeScript + ESLint + Prettier 统一代码规范
-- [ ] 1.3 在 K8s 集群部署 PostgreSQL 实例，初始化数据库连接配置
-- [ ] 1.4 在 K8s 集群部署 Qdrant 向量数据库实例，验证连通性
-- [ ] 1.5 配置大模型中转代理环境变量（`ANTHROPIC_BASE_URL` / `OPENAI_BASE_URL`），验证 Embedding API 可用
-- [ ] 1.6 建立 GitLab API 集成基础库（认证、仓库信息读取、文件推送封装）
+- [x] 1.3 在 K8s 集群部署 PostgreSQL 实例，初始化数据库连接配置
+- [x] 1.4 在 K8s 集群部署 Qdrant 向量数据库实例，验证连通性
+- [x] 1.5 配置大模型中转代理环境变量（`ANTHROPIC_BASE_URL` / `OPENAI_BASE_URL`），验证 Embedding API 可用
+- [x] 1.6 建立 GitLab API 集成基础库（认证、仓库信息读取、文件推送封装）
 
 ## 2. 数据模型与数据库 Schema
 
@@ -15,23 +15,23 @@
 - [x] 2.4 设计并创建 Skill 表（`skills`）：Skill ID、类型、名称、描述、内容、可见性、版本
 - [x] 2.5 设计并创建合规上报记录表（`compliance_reports`）：项目 ID、扫描时间、规则列表、override 事件 JSON
 - [x] 2.6 设计并创建分发记录表（`distribution_logs`）：项目 ID、触发原因、推送状态、GitLab commit SHA、时间
-- [ ] 2.7 编写数据库 migration 脚本并验证
+- [x] 2.7 编写数据库 migration 脚本并验证
 
 ## 3. Spec 管理中心后端 API
 
-- [ ] 3.1 实现规则 CRUD API（`GET/POST/PUT/DELETE /api/specs/rules`），含分层权限校验
-- [ ] 3.2 实现规则版本历史查询 API（`GET /api/specs/rules/:id/history`）
-- [ ] 3.3 实现三层规则编译逻辑：公司级 + 领域级 + 项目级合并，显式 override 优先
-- [ ] 3.4 实现项目注册与领域订阅管理 API（`POST /api/projects`、`PUT /api/projects/:id/subscriptions`）
-- [ ] 3.5 实现用户权限系统（公司级/领域级/项目级角色绑定）
+- [x] 3.1 实现规则 CRUD API（`GET/POST/PUT/DELETE /api/specs/rules`），含分层权限校验
+- [x] 3.2 实现规则版本历史查询 API（`GET /api/specs/rules/:id/history`）
+- [x] 3.3 实现三层规则编译逻辑：公司级 + 领域级 + 项目级合并，显式 override 优先
+- [x] 3.4 实现项目注册与领域订阅管理 API（`POST /api/projects`、`PUT /api/projects/:id/subscriptions`）
+- [x] 3.5 实现用户权限系统（公司级/领域级/项目级角色绑定）
 
 ## 4. Spec 分发引擎
 
-- [ ] 4.1 实现 `CLAUDE.md` 模板生成器：将编译后三层规则渲染为标准 `CLAUDE.md` 格式
-- [ ] 4.2 实现 GitLab 文件推送服务：通过 GitLab API 将 `CLAUDE.md` 提交至目标仓库
-- [ ] 4.3 实现规则变更监听器：Spec 规则写入后触发受影响项目的分发任务队列
-- [ ] 4.4 实现分发任务失败重试机制（最多 3 次）与失败告警日志
-- [ ] 4.5 实现分发记录写入（`distribution_logs`）与状态查询 API
+- [x] 4.1 实现 `CLAUDE.md` 模板生成器：将编译后三层规则渲染为标准 `CLAUDE.md` 格式
+- [x] 4.2 实现 GitLab 文件推送服务：通过 GitLab API 将 `CLAUDE.md` 提交至目标仓库
+- [x] 4.3 实现规则变更监听器：Spec 规则写入后触发受影响项目的分发任务队列
+- [x] 4.4 实现分发任务失败重试机制（最多 3 次）与失败告警日志
+- [x] 4.5 实现分发记录写入（`distribution_logs`）与状态查询 API
 
 ## 5. 认知层 MCP 服务
 
