@@ -1,14 +1,15 @@
 {
   "name": "@zhixing/db",
   "version": "0.0.1",
+  "type": "module",
   "private": true,
   "description": "数据库封装和 Drizzle ORM 配置",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",

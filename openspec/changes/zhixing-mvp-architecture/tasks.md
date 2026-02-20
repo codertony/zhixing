@@ -1,21 +1,21 @@
 ## 1. 基础设施与工程脚手架
 
-- [ ] 1.1 初始化 Monorepo 项目结构（Turborepo），划分 `apps/web`、`apps/cli`、`packages/mcp-server`、`packages/db` 等工作区
-- [ ] 1.2 配置 TypeScript + ESLint + Prettier 统一代码规范
-- [ ] 1.3 在 K8s 集群部署 PostgreSQL 实例，初始化数据库连接配置
-- [ ] 1.4 在 K8s 集群部署 Qdrant 向量数据库实例，验证连通性
-- [ ] 1.5 配置大模型中转代理环境变量（`ANTHROPIC_BASE_URL` / `OPENAI_BASE_URL`），验证 Embedding API 可用
-- [ ] 1.6 建立 GitLab API 集成基础库（认证、仓库信息读取、文件推送封装）
+- [x] 1.1 初始化 Monorepo 项目结构（Turborepo），划分 `apps/web`、`apps/cli`、`packages/mcp-server`、`packages/db` 等工作区
+- [x] 1.2 配置 TypeScript + ESLint + Prettier 统一代码规范
+- [x] 1.3 在 K8s 集群部署 PostgreSQL 实例，初始化数据库连接配置
+- [x] 1.4 在 K8s 集群部署 Qdrant 向量数据库实例，验证连通性
+- [x] 1.5 配置大模型中转代理环境变量（`ANTHROPIC_BASE_URL` / `OPENAI_BASE_URL`），验证 Embedding API 可用
+- [x] 1.6 建立 GitLab API 集成基础库（认证、仓库信息读取、文件推送封装）
 
 ## 2. 数据模型与数据库 Schema
 
-- [ ] 2.1 设计并创建 Spec 规则表（`spec_rules`）：规则 ID、层级、所属域/项目、内容、版本、创建人、时间
-- [ ] 2.2 设计并创建 Override 记录表（`spec_overrides`）：规则 ID、项目 ID、原因、操作人、commit SHA、时间
-- [ ] 2.3 设计并创建项目注册表（`projects`）：项目 ID、GitLab 仓库路径、所属领域、领域订阅列表
-- [ ] 2.4 设计并创建 Skill 表（`skills`）：Skill ID、类型、名称、描述、内容、可见性、版本
-- [ ] 2.5 设计并创建合规上报记录表（`compliance_reports`）：项目 ID、扫描时间、规则列表、override 事件 JSON
-- [ ] 2.6 设计并创建分发记录表（`distribution_logs`）：项目 ID、触发原因、推送状态、GitLab commit SHA、时间
-- [ ] 2.7 编写数据库 migration 脚本并验证
+- [x] 2.1 设计并创建 Spec 规则表（`spec_rules`）：规则 ID、层级、所属域/项目、内容、版本、创建人、时间
+- [x] 2.2 设计并创建 Override 记录表（`spec_overrides`）：规则 ID、项目 ID、原因、操作人、commit SHA、时间
+- [x] 2.3 设计并创建项目注册表（`projects`）：项目 ID、GitLab 仓库路径、所属领域、领域订阅列表
+- [x] 2.4 设计并创建 Skill 表（`skills`）：Skill ID、类型、名称、描述、内容、可见性、版本
+- [x] 2.5 设计并创建合规上报记录表（`compliance_reports`）：项目 ID、扫描时间、规则列表、override 事件 JSON
+- [x] 2.6 设计并创建分发记录表（`distribution_logs`）：项目 ID、触发原因、推送状态、GitLab commit SHA、时间
+- [x] 2.7 编写数据库 migration 脚本并验证
 
 ## 3. Spec 管理中心后端 API
 

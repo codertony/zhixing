@@ -3,14 +3,20 @@
   "version": "0.0.1",
   "private": true,
   "description": "共享 ESLint 配置",
-  "main": "index.js",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./node": "./src/node.js",
+    "./react": "./src/react.js"
+  },
   "files": [
-    "index.js",
-    "react.js",
-    "node.js"
+    "src"
   ],
   "scripts": {
-    "clean": "echo 'Nothing to clean'"
+    "clean": "echo 'Nothing to clean'",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
   },
   "dependencies": {
     "@typescript-eslint/eslint-plugin": "^7.0.2",
