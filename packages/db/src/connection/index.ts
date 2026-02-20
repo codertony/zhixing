@@ -3,6 +3,7 @@
  */
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
+import { sql } from 'drizzle-orm'
 import * as schema from '../schema/index.js'
 
 const DATABASE_URL = process.env.DATABASE_URL
@@ -23,6 +24,9 @@ export const db = drizzle(connection, { schema })
 
 // 导出连接以便关闭
 export { connection }
+
+// 导出 sql helper
+export { sql }
 
 /**
  * 关闭数据库连接
