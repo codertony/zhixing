@@ -179,4 +179,28 @@ export async function rulesRoutes(app: FastifyInstance) {
       return reply.status(500).send({ success: false, error: '删除规则失败' })
     }
   })
+
+  // 获取规则版本历史
+  app.get('/:id/history', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { id } = paramsSchema.parse(request.params)
+
+      // 检查规则是否存在
+      const existingRule = await rulesService.findById(id)
+      if (!existingRule) {
+        return reply.status(404).send({ success: false, error: '规则不存在' })
+      }
+
+      // 获取版本历史
+      const history = await rulesService.getVersionHistory(id)
+
+      return reply.send({ success: true, data: history })
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return reply.status(400).send({ success: false, error: '无效的ID格式' })
+      }
+      request.log.error(error)
+      return reply.status(500).send({ success: false, error: '获取版本历史失败' })
+    }
+  })
 }

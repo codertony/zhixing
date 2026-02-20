@@ -137,4 +137,17 @@ export const rulesService = {
   async delete(id: string): Promise<void> {
     await sql`DELETE FROM spec_rules WHERE id = ${id}`
   },
+
+  /**
+   * 获取规则版本历史
+   */
+  async getVersionHistory(ruleId: string) {
+    const history = await sql`
+      SELECT id, rule_id, version, content, created_by, created_at
+      FROM rule_versions
+      WHERE rule_id = ${ruleId}
+      ORDER BY version DESC
+    `
+    return history
+  },
 }

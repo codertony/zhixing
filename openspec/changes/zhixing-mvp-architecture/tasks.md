@@ -20,7 +20,7 @@
 ## 3. Spec 管理中心后端 API
 
 - [x] 3.1 实现规则 CRUD API（`GET/POST/PUT/DELETE /api/specs/rules`），含分层权限校验
-- [ ] 3.2 实现规则版本历史查询 API（`GET /api/specs/rules/:id/history`）
+- [x] 3.2 实现规则版本历史查询 API（`GET /api/specs/rules/:id/history`）
 - [ ] 3.3 实现三层规则编译逻辑：公司级 + 领域级 + 项目级合并，显式 override 优先
 - [ ] 3.4 实现项目注册与领域订阅管理 API（`POST /api/projects`、`PUT /api/projects/:id/subscriptions`）
 - [ ] 3.5 实现用户权限系统（公司级/领域级/项目级角色绑定）
