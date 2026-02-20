@@ -6,6 +6,7 @@ import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
 import dotenv from 'dotenv'
 import { rulesRoutes } from './routes/rules.js'
+import { compilerRoutes } from './routes/compiler.js'
 
 dotenv.config()
 
@@ -36,6 +37,7 @@ async function main() {
 
   // 注册 Spec 规则路由
   await app.register(rulesRoutes, { prefix: '/api/specs/rules' })
+  await app.register(compilerRoutes, { prefix: '/api/specs/compile' })
 
   // 启动服务
   const PORT = parseInt(process.env.API_PORT || '3001')
