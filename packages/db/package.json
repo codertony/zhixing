@@ -14,8 +14,9 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "clean": "rm -rf dist",
-    "generate": "drizzle-kit generate",
-    "migrate": "drizzle-kit migrate",
+    "generate": "drizzle-kit generate:pg",
+    "migrate": "drizzle-kit push:pg",
+    "drop": "drizzle-kit drop",
     "seed": "tsx src/seed.ts",
     "reset": "drizzle-kit drop && drizzle-kit migrate",
     "studio": "drizzle-kit studio"
