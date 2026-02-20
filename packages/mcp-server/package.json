@@ -24,6 +24,7 @@
     "@zhixing/db": "workspace:*",
     "@zhixing/gitlab-client": "workspace:*",
     "@zhixing/shared": "workspace:*",
+    "postgres": "^3.4.3",
     "zod": "^3.22.4"
   },
   "devDependencies": {

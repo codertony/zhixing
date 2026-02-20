@@ -35,17 +35,17 @@
 
 ## 5. 认知层 MCP 服务
 
-- [ ] 5.1 实现 GitLab 代码拉取与文件解析模块（支持 Java、JavaScript、TypeScript 文件）
-- [ ] 5.2 实现代码文件分块（Chunking）策略（按函数/类边界分块，非固定字符数）
-- [ ] 5.3 实现 Embedding 调用与向量存储（通过中转代理调用 OpenAI Embeddings → 写入 Qdrant）
-- [ ] 5.4 实现定期批量索引任务调度（默认每日 02:00，支持手动触发）
-- [ ] 5.5 实现增量索引逻辑：对比 git commit diff，只重新索引变更文件
-- [ ] 5.6 实现文档索引（Markdown/OpenAPI）：解析文档并写入 Qdrant，与代码索引统一命名空间管理
-- [ ] 5.7 实现语义检索 API：接受自然语言查询，返回 Top-K 相关代码/文档片段（含文件路径、行号）
-- [ ] 5.8 实现 Git 历史变更分析 API：调用 GitLab API 获取文件 commit 列表并生成摘要
-- [ ] 5.9 将认知层能力封装为 MCP Server（使用 Anthropic MCP SDK），暴露标准 MCP 工具接口
-- [ ] 5.10 实现跨领域检索隔离：按领域命名空间过滤，未订阅领域结果不返回
-- [ ] 5.11 部署认知层 MCP Server 至 K8s 集群，配置健康检查与服务发现
+- [x] 5.1 实现 GitLab 代码拉取与文件解析模块（支持 Java、JavaScript、TypeScript 文件）
+- [x] 5.2 实现代码文件分块（Chunking）策略（按函数/类边界分块，非固定字符数）
+- [x] 5.3 实现 Embedding 调用与向量存储（通过中转代理调用 OpenAI Embeddings → 写入 Qdrant）
+- [x] 5.4 实现定期批量索引任务调度（默认每日 02:00，支持手动触发）
+- [x] 5.5 实现增量索引逻辑：对比 git commit diff，只重新索引变更文件
+- [x] 5.6 实现文档索引（Markdown/OpenAPI）：解析文档并写入 Qdrant，与代码索引统一命名空间管理
+- [x] 5.7 实现语义检索 API：接受自然语言查询，返回 Top-K 相关代码/文档片段（含文件路径、行号）
+- [x] 5.8 实现 Git 历史变更分析 API：调用 GitLab API 获取文件 commit 列表并生成摘要
+- [x] 5.9 将认知层能力封装为 MCP Server（使用 Anthropic MCP SDK），暴露标准 MCP 工具接口
+- [x] 5.10 实现跨领域检索隔离：按领域命名空间过滤，未订阅领域结果不返回
+- [x] 5.11 部署认知层 MCP Server 至 K8s 集群，配置健康检查与服务发现
 
 ## 6. Spec 管理中心 Web UI
 
