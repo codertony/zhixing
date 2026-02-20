@@ -51,4 +51,22 @@ pnpm lint
 
 | 变量名 | 说明 | 默认值 |
 |--------|------|--------|
-| `VITE_API_URL` | API 服务地址 | http://localhost:3001 |
+| `VITE_API_URL` | API 服务地址 | http://localhost:9000 |
+
+## 代理配置
+
+开发模式下，Vite 配置了代理：
+
+```typescript
+// vite.config.ts
+server: {
+  proxy: {
+    '/api': {
+      target: 'http://localhost:9000',
+      changeOrigin: true,
+    },
+  },
+}
+```
+
+这意味着前端代码中请求 `/api/xxx` 会被代理到 `http://localhost:9000/api/xxx`。

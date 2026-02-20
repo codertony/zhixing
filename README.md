@@ -79,12 +79,36 @@ zhixing/
 pnpm install
 ```
 
+### 环境配置
+
+```bash
+# 复制环境变量示例文件
+cp .env.example .env
+
+# 编辑 .env 文件，配置必要的环境变量
+```
+
+**关键配置项：**
+
+| 变量名 | 说明 | 默认值 |
+|--------|------|--------|
+| `API_PORT` | API 服务端口 | 9000 |
+| `DATABASE_URL` | PostgreSQL 连接字符串 | - |
+| `VITE_API_URL` | 前端连接的 API 地址 | http://localhost:9000 |
+
 ### 开发模式
 
 ```bash
 # 启动所有应用
 pnpm dev
+```
 
+启动后访问：
+- **Web 前端**: http://localhost:5173
+- **API 服务**: http://localhost:9000
+- **API 健康检查**: http://localhost:9000/health
+
+```bash
 # 单独启动某个应用
 pnpm --filter @zhixing/api dev
 pnpm --filter @zhixing/web dev

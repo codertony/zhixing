@@ -144,3 +144,17 @@ chore: 构建/工具变更
 4. **测试失败**
    - 检查测试环境变量
    - 确保数据库迁移已执行
+
+5. **端口被占用 (EACCES / EADDRINUSE)**
+   - 错误：`listen EACCES: permission denied 0.0.0.0:xxxx`
+   - 原因：端口被系统保留或占用
+   - 解决：修改 `.env` 文件使用高位端口（如 9000）
+   ```bash
+   API_PORT=9000
+   VITE_API_URL=http://localhost:9000
+   ```
+
+6. **API 启动失败**
+   - 检查数据库是否已启动
+   - 检查 `.env` 文件是否存在且配置正确
+   - 查看具体错误日志

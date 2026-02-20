@@ -46,8 +46,8 @@ async function main() {
   await app.register(usersRoutes, { prefix: '/api/users' })
 
   // 启动服务
-  const PORT = parseInt(process.env.API_PORT || '3001')
-  const HOST = process.env.API_HOST || '0.0.0.0'
+  const PORT = parseInt(process.env.API_PORT || '9000')
+  const HOST = process.env.API_HOST || '127.0.0.1'
 
   try {
     await app.listen({ port: PORT, host: HOST })

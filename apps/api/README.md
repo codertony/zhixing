@@ -49,13 +49,18 @@ pnpm lint
 
 ## API 端点
 
+### 健康检查
+
+- `GET /` - API 信息
+- `GET /health` - 健康检查
+
 ### Spec 规则管理
 
-- `GET /api/rules` - 获取规则列表
-- `GET /api/rules/:id` - 获取单个规则
-- `POST /api/rules` - 创建规则
-- `PUT /api/rules/:id` - 更新规则
-- `DELETE /api/rules/:id` - 删除规则
+- `GET /api/specs/rules` - 获取规则列表
+- `GET /api/specs/rules/:id` - 获取单个规则
+- `POST /api/specs/rules` - 创建规则
+- `PUT /api/specs/rules/:id` - 更新规则
+- `DELETE /api/specs/rules/:id` - 删除规则
 
 ### 项目管理
 
@@ -65,12 +70,24 @@ pnpm lint
 
 ### Spec 编译
 
-- `POST /api/compile/:projectId` - 编译项目 Spec
+- `POST /api/specs/compile/:projectId` - 编译项目 Spec
+
+### 分发状态
+
+- `GET /api/distribution/status/:projectId` - 获取分发状态
+- `POST /api/distribution/push/:projectId` - 推送到 GitLab
+
+### 用户管理
+
+- `GET /api/users` - 获取用户列表
+- `GET /api/users/:id` - 获取单个用户
 
 ## 环境变量
 
 | 变量名 | 说明 | 默认值 |
 |--------|------|--------|
-| `PORT` | 服务端口 | 3001 |
+| `API_PORT` | 服务端口 | 9000 |
+| `API_HOST` | 服务主机 | 127.0.0.1 |
+| `API_CORS_ORIGIN` | CORS 允许来源 | http://localhost:5173 |
 | `DATABASE_URL` | PostgreSQL 连接字符串 | - |
 | `REDIS_URL` | Redis 连接字符串 | - |
