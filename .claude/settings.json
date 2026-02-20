@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "defaultMode": "acceptEdits",
     "allow": [
       "Bash",
       "Read",
@@ -12,6 +11,12 @@
       "LS",
       "MultiEdit",
       "WebSearch",
+      "Skill",
+      "TaskCreate",
+      "TaskUpdate",
+      "TaskList",
+      "TaskGet",
+      "AskUserQuestion",
       "Bash(git -C \"E:/workSpace/ZhiXing\" status)",
       "Bash(git -C \"E:/workSpace/ZhiXing\" log --oneline -3)",
       "Bash(git -C \"E:/workSpace/ZhiXing\" add .gitignore)",
@@ -26,7 +31,34 @@
       "Bash(openspec instructions proposal:*)",
       "Bash(openspec instructions design:*)",
       "Bash(openspec instructions specs:*)",
-      "Bash(openspec instructions tasks:*)"
+      "Bash(openspec instructions tasks:*)",
+      "Bash(pnpm install)",
+      "Bash(pnpm dev)",
+      "Bash(pnpm build)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm test)"
+    ],
+    "deny": [
+      "Bash(*>*.env*)",
+      "Bash(*>*.env.local*)",
+      "Bash(*secrets*)",
+      "Bash(*password*)",
+      "Bash(*token*)"
+    ],
+    "defaultMode": "acceptEdits",
+    "protectedFiles": [
+      ".env",
+      ".env.local",
+      ".env.production",
+      "**/secrets.yaml",
+      "**/secrets.json",
+      "**/*.pem",
+      "**/*.key"
     ]
+  },
+  "enabledPlugins": {
+    "ralph-wiggum@claude-code-plugins": true,
+    "superpowers@superpowers-marketplace": true,
+    "everything-claude-code@everything-claude-code": true
   }
 }

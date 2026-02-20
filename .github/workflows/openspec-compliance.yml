@@ -1,0 +1,49 @@
+name: OpenSpec Compliance
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  compliance:
+    name: Check Compliance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check OpenSpec structure
+        run: |
+          echo "Checking OpenSpec directory structure..."
+          test -d openspec || (echo "Missing openspec directory" && exit 1)
+          test -f openspec/config.yaml || (echo "Missing openspec/config.yaml" && exit 1)
+          test -f openspec/workflow.md || (echo "Missing openspec/workflow.md" && exit 1)
+
+      - name: Check active changes
+        run: |
+          echo "Checking active OpenSpec changes..."
+          for change in openspec/changes/*/; do
+            if [ -d "$change" ]; then
+              echo "Found change: $change"
+              test -f "${change}.openspec.yaml" || (echo "Missing .openspec.yaml in $change" && exit 1)
+              test -f "${change}tasks.md" || test -f "${change}tasks.json" || (echo "Missing tasks file in $change" && exit 1)
+            fi
+          done
+
+      - name: Check CLAUDE.md sync
+        run: |
+          echo "Checking CLAUDE.md is up to date..."
+          test -f CLAUDE.md || (echo "Missing CLAUDE.md" && exit 1)
+          # Check if CLAUDE.md has been updated in this PR
+          git diff --name-only HEAD~1 | grep -q CLAUDE.md && echo "CLAUDE.md was modified" || echo "CLAUDE.md not modified in this PR"
+
+      - name: Validate change status
+        run: |
+          echo "Validating change status consistency..."
+          # This would be replaced with actual openspec CLI validation
+          # openspec validate
+          echo "Validation placeholder - integrate with openspec CLI"

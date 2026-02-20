@@ -1,0 +1,35 @@
+{
+  "name": "@zhixing/mcp-server",
+  "version": "0.0.1",
+  "private": true,
+  "description": "MCP Server 实现",
+  "main": "dist/index.js",
+  "bin": {
+    "zhixing-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@zhixing/db": "workspace:*",
+    "@zhixing/gitlab-client": "workspace:*",
+    "@zhixing/shared": "workspace:*",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@zhixing/eslint-config": "workspace:*",
+    "@types/node": "^20.11.19",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3",
+    "vitest": "^1.3.1"
+  }
+}

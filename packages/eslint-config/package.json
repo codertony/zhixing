@@ -1,0 +1,23 @@
+{
+  "name": "@zhixing/eslint-config",
+  "version": "0.0.1",
+  "private": true,
+  "description": "共享 ESLint 配置",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "react.js",
+    "node.js"
+  ],
+  "scripts": {
+    "clean": "echo 'Nothing to clean'"
+  },
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.0.2",
+    "@typescript-eslint/parser": "^7.0.2",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0"
+  }
+}
