@@ -7,6 +7,7 @@ import {
   Modal,
   Form,
   Input,
+  Select,
   Space,
   Popconfirm,
   message,
@@ -22,8 +23,17 @@ import {
   GithubOutlined,
   SyncOutlined,
   FileTextOutlined,
+  ApartmentOutlined,
 } from '@ant-design/icons'
 import type { TableColumnsType } from 'antd'
+
+const { Option } = Select
+
+interface Domain {
+  id: string
+  name: string
+  code: string
+}
 
 interface Project {
   id: string
@@ -47,21 +57,25 @@ const statusMap: Record<string, { text: string; color: string }> = {
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
+  const [domains, setDomains] = useState<Domain[]>([])
   const [loading, setLoading] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
   const [detailModalVisible, setDetailModalVisible] = useState(false)
   const [form] = Form.useForm()
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [viewingProject, setViewingProject] = useState<Project | null>(null)
+  const [domainFilter, setDomainFilter] = useState<string>('all')
 
   useEffect(() => {
     fetchProjects()
-  }, [])
+    fetchDomains()
+  }, [domainFilter])
 
   const fetchProjects = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/projects')
+      const params = domainFilter !== 'all' ? `?domainId=${domainFilter}` : ''
+      const res = await fetch(`/api/projects${params}`)
       const data = await res.json()
       if (data.success) {
         setProjects(data.data.data || [])
@@ -75,7 +89,19 @@ export default function ProjectsPage() {
     }
   }
 
-  const handleCreate = async (values: { name: string; gitlabPath: string }) => {
+  const fetchDomains = async () => {
+    try {
+      const res = await fetch('/api/domains')
+      const data = await res.json()
+      if (data.success) {
+        setDomains(data.data.data || [])
+      }
+    } catch (error) {
+      console.error('获取领域失败:', error)
+    }
+  }
+
+  const handleCreate = async (values: { name: string; gitlabPath: string; domainId?: string }) => {
     try {
       const url = editingProject
         ? `/api/projects/${editingProject.id}`
@@ -85,10 +111,7 @@ export default function ProjectsPage() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...values,
-          domainId: null,
-        }),
+        body: JSON.stringify(values),
       })
 
       const data = await res.json()
@@ -141,6 +164,7 @@ export default function ProjectsPage() {
     form.setFieldsValue({
       name: project.name,
       gitlabPath: project.gitlabPath || project.gitlab_path,
+      domainId: project.domainId || project.domain_id,
     })
     setModalVisible(true)
   }
@@ -156,6 +180,12 @@ export default function ProjectsPage() {
     setDetailModalVisible(true)
   }
 
+  const getDomainName = (domainId?: string) => {
+    if (!domainId) return '-'
+    const domain = domains.find(d => d.id === domainId)
+    return domain ? <Tag color="orange"><ApartmentOutlined /> {domain.name}</Tag> : '未知领域'
+  }
+
   const columns: TableColumnsType<Project> = [
     {
       title: '项目名称',
@@ -166,6 +196,14 @@ export default function ProjectsPage() {
           {name}
         </Button>
       ),
+    },
+    {
+      title: '所属领域',
+      dataIndex: 'domainId',
+      key: 'domainId',
+      width: 150,
+      render: (_value: unknown, record: Project) =>
+        getDomainName(record.domainId || record.domain_id),
     },
     {
       title: 'GitLab 路径',
@@ -255,13 +293,28 @@ export default function ProjectsPage() {
           </Space>
         }
         extra={
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={openCreateModal}
-          >
-            注册项目
-          </Button>
+          <Space>
+            <Select
+              value={domainFilter}
+              onChange={setDomainFilter}
+              style={{ width: 160 }}
+              placeholder="全部领域"
+            >
+              <Option value="all">全部领域</Option>
+              {domains.map(domain => (
+                <Option key={domain.id} value={domain.id}>
+                  <ApartmentOutlined /> {domain.name}
+                </Option>
+              ))}
+            </Select>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={openCreateModal}
+            >
+              注册项目
+            </Button>
+          </Space>
         }
       >
         <Table
@@ -314,6 +367,20 @@ export default function ProjectsPage() {
           </Form.Item>
 
           <Form.Item
+            name="domainId"
+            label="所属领域"
+            rules={[{ required: true, message: '请选择所属领域' }]}
+          >
+            <Select placeholder="选择领域">
+              {domains.map(domain => (
+                <Option key={domain.id} value={domain.id}>
+                  <ApartmentOutlined /> {domain.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
             name="gitlabPath"
             label="GitLab 路径"
             rules={[{ required: true, message: '请输入 GitLab 路径' }]}
@@ -337,6 +404,9 @@ export default function ProjectsPage() {
           <Descriptions column={1} bordered>
             <Descriptions.Item label="项目ID">{viewingProject.id}</Descriptions.Item>
             <Descriptions.Item label="项目名称">{viewingProject.name}</Descriptions.Item>
+            <Descriptions.Item label="所属领域">
+              {getDomainName(viewingProject.domainId || viewingProject.domain_id)}
+            </Descriptions.Item>
             <Descriptions.Item label="GitLab 路径">
               {viewingProject.gitlabPath || viewingProject.gitlab_path}
             </Descriptions.Item>
