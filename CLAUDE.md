@@ -894,6 +894,73 @@ OpenSpec 归档前强制触发：
 
 ## 知行平台项目特定规范
 
+### 容器工具规范（本地开发）
+
+**本地开发强制使用 Podman**，不使用 Docker 或远程云 K8s 服务。
+
+| 场景 | 工具 | 说明 |
+|------|------|------|
+| 本地开发 | **Podman** | 本地容器运行时，rootless 更安全 |
+| 本地编排 | **podman-compose** | 本地多容器管理 |
+| 容器构建 | **podman build** | 替代 docker build |
+| 镜像管理 | **podman** | 本地镜像管理 |
+| 生产部署 | Docker / K8s | 由运维团队配置，不在本地开发使用 |
+
+**Podman 安装:**
+
+```bash
+# macOS
+brew install podman podman-compose
+podman machine init
+podman machine start
+
+# Linux (Ubuntu/Debian)
+sudo apt-get install podman podman-compose
+
+# Linux (Fedora/RHEL)
+sudo dnf install podman podman-compose
+
+# Windows
+# 使用 Podman Desktop: https://podman-desktop.io/
+```
+
+**常用 Podman 命令:**
+
+```bash
+# 容器生命周期
+podman ps              # 查看运行中的容器
+podman ps -a           # 查看所有容器
+podman start <name>   # 启动容器
+podman stop <name>    # 停止容器
+podman rm <name>      # 删除容器
+
+# 镜像管理
+podman images          # 查看本地镜像
+podman pull <image>   # 拉取镜像
+podman rmi <image>    # 删除镜像
+
+# 日志和调试
+podman logs -f <name> # 查看容器日志
+podman exec -it <name> sh  # 进入容器
+
+# 使用 podman-compose
+cd scripts
+podman-compose up -d          # 启动所有服务
+podman-compose down           # 停止所有服务
+podman-compose logs -f        # 查看日志
+podman-compose pull           # 更新镜像
+```
+
+**Docker 兼容模式（可选）:**
+
+如果习惯使用 docker 命令，可以设置别名:
+
+```bash
+# ~/.bashrc 或 ~/.zshrc
+alias docker=podman
+alias docker-compose=podman-compose
+```
+
 ### Monorepo 工作区结构
 
 ```
@@ -1431,17 +1498,44 @@ const API_URL = process.env.API_URL || 'http://localhost:3000'
 
 **解决方案**:
 ```bash
-# 1. 检查 Docker 容器状态
-docker ps
+# 1. 检查 Podman 容器状态
+podman ps
 
-# 2. 重启数据库服务
+# 2. 检查特定容器日志
+podman logs zhixing-postgres
+podman logs zhixing-redis
+podman logs zhixing-qdrant
+
+# 3. 重启数据库服务
 ./scripts/init.sh --skip-deps
 
-# 3. 验证环境变量
+# 4. 验证环境变量
 cat .env.local | grep DB_
 
-# 4. 重置数据库（谨慎使用）
+# 5. 重置数据库（谨慎使用）
 pnpm --filter @zhixing/db reset
+
+# 6. 如果容器启动失败，尝试重新创建
+cd scripts
+podman-compose down
+podman-compose up -d
+```
+
+**Podman Machine 问题（macOS/Windows）:**
+```bash
+# 检查 machine 状态
+podman machine list
+
+# 如果未运行
+podman machine start
+
+# 如果未初始化
+podman machine init
+podman machine start
+
+# 重启 machine
+podman machine stop
+podman machine start
 ```
 
 ### 依赖安装问题

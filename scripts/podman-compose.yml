@@ -1,0 +1,61 @@
+# Podman Compose 配置
+# 本地开发使用 Podman 作为容器运行时
+
+version: '3.8'
+
+services:
+  postgres:
+    image: docker.io/postgres:16-alpine
+    container_name: zhixing-postgres
+    hostname: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: zhixing
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - zhixing-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: docker.io/redis:7-alpine
+    container_name: zhixing-redis
+    hostname: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - zhixing-redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  qdrant:
+    image: docker.io/qdrant/qdrant:latest
+    container_name: zhixing-qdrant
+    hostname: qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - zhixing-qdrant-data:/qdrant/storage
+    environment:
+      QDRANT__SERVICE__HTTP_PORT: 6333
+    restart: unless-stopped
+
+volumes:
+  zhixing-postgres-data:
+    driver: local
+  zhixing-redis-data:
+    driver: local
+  zhixing-qdrant-data:
+    driver: local
