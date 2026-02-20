@@ -8,6 +8,7 @@ import dotenv from 'dotenv'
 import { rulesRoutes } from './routes/rules.js'
 import { compilerRoutes } from './routes/compiler.js'
 import { projectsRoutes } from './routes/projects.js'
+import { usersRoutes } from './routes/users.js'
 
 dotenv.config()
 
@@ -40,6 +41,7 @@ async function main() {
   await app.register(rulesRoutes, { prefix: '/api/specs/rules' })
   await app.register(compilerRoutes, { prefix: '/api/specs/compile' })
   await app.register(projectsRoutes, { prefix: '/api/projects' })
+  await app.register(usersRoutes, { prefix: '/api/users' })
 
   // 启动服务
   const PORT = parseInt(process.env.API_PORT || '3001')
