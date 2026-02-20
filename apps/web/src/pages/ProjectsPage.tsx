@@ -1,208 +1,356 @@
 import { useState, useEffect } from 'react'
+import {
+  Card,
+  Table,
+  Button,
+  Tag,
+  Modal,
+  Form,
+  Input,
+  Space,
+  Popconfirm,
+  message,
+  Empty,
+  Tooltip,
+  Descriptions,
+} from 'antd'
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  ProjectOutlined,
+  GithubOutlined,
+  SyncOutlined,
+  FileTextOutlined,
+} from '@ant-design/icons'
+import type { TableColumnsType } from 'antd'
 
 interface Project {
   id: string
   name: string
   gitlabPath: string
   gitlab_path?: string
-  domainId: string
+  domainId?: string
   domain_id?: string
+  status?: string
   createdAt: string
   created_at?: string
+  updatedAt?: string
+  updated_at?: string
+}
+
+const statusMap: Record<string, { text: string; color: string }> = {
+  active: { text: '活跃', color: 'green' },
+  archived: { text: '已归档', color: 'default' },
+  pending: { text: '待配置', color: 'orange' },
 }
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
-  const [loading, setLoading] = useState(true)
-  const [showModal, setShowModal] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
-    gitlabPath: '',
-  })
-  const [submitting, setSubmitting] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [modalVisible, setModalVisible] = useState(false)
+  const [detailModalVisible, setDetailModalVisible] = useState(false)
+  const [form] = Form.useForm()
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [viewingProject, setViewingProject] = useState<Project | null>(null)
 
   useEffect(() => {
     fetchProjects()
   }, [])
 
   const fetchProjects = async () => {
+    setLoading(true)
     try {
       const res = await fetch('/api/projects')
       const data = await res.json()
       if (data.success) {
         setProjects(data.data.data || [])
+      } else {
+        message.error(data.error || '获取项目列表失败')
       }
     } catch (error) {
-      console.error('获取项目失败:', error)
+      message.error('网络错误，请检查API服务是否正常')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
+  const handleCreate = async (values: { name: string; gitlabPath: string }) => {
     try {
-      const res = await fetch('/api/projects', {
-        method: 'POST',
+      const url = editingProject
+        ? `/api/projects/${editingProject.id}`
+        : '/api/projects'
+      const method = editingProject ? 'PUT' : 'POST'
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
-          domainId: null, // 默认无领域
+          ...values,
+          domainId: null,
         }),
       })
+
       const data = await res.json()
       if (data.success) {
-        setShowModal(false)
-        setFormData({ name: '', gitlabPath: '' })
+        message.success(editingProject ? '项目更新成功' : '项目注册成功')
+        setModalVisible(false)
+        form.resetFields()
+        setEditingProject(null)
         fetchProjects()
       } else {
-        alert(data.error || '创建失败')
+        message.error(data.error || '操作失败')
       }
     } catch (error) {
-      console.error('创建项目失败:', error)
-      alert('创建项目失败')
-    } finally {
-      setSubmitting(false)
+      message.error('网络错误')
     }
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('确定要删除此项目吗？')) return
     try {
       const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' })
       if (res.ok) {
+        message.success('项目删除成功')
         fetchProjects()
       } else {
-        alert('删除失败')
+        message.error('删除失败')
       }
     } catch (error) {
-      console.error('删除项目失败:', error)
-      alert('删除失败')
+      message.error('网络错误')
     }
   }
 
-  if (loading) return <div className="p-4">加载中...</div>
+  const handleCompile = async (projectId: string) => {
+    try {
+      const res = await fetch(`/api/specs/compile/${projectId}`, {
+        method: 'POST',
+      })
+      const data = await res.json()
+      if (data.success) {
+        message.success('Spec 编译成功')
+      } else {
+        message.error(data.error || '编译失败')
+      }
+    } catch (error) {
+      message.error('网络错误')
+    }
+  }
+
+  const openEditModal = (project: Project) => {
+    setEditingProject(project)
+    form.setFieldsValue({
+      name: project.name,
+      gitlabPath: project.gitlabPath || project.gitlab_path,
+    })
+    setModalVisible(true)
+  }
+
+  const openCreateModal = () => {
+    setEditingProject(null)
+    form.resetFields()
+    setModalVisible(true)
+  }
+
+  const openDetailModal = (project: Project) => {
+    setViewingProject(project)
+    setDetailModalVisible(true)
+  }
+
+  const columns: TableColumnsType<Project> = [
+    {
+      title: '项目名称',
+      dataIndex: 'name',
+      key: 'name',
+      render: (name: string, record: Project) => (
+        <Button type="link" onClick={() => openDetailModal(record)}>
+          {name}
+        </Button>
+      ),
+    },
+    {
+      title: 'GitLab 路径',
+      dataIndex: 'gitlabPath',
+      key: 'gitlabPath',
+      render: (_value: unknown, record: Project) => {
+        const path = record.gitlabPath || record.gitlab_path || '-'
+        return (
+          <Space>
+            <GithubOutlined />
+            <span>{path}</span>
+          </Space>
+        )
+      },
+    },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      width: 100,
+      render: (status: string) => {
+        const config = statusMap[status || 'active']
+        return <Tag color={config.color}>{config.text}</Tag>
+      },
+    },
+    {
+      title: '注册时间',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: 180,
+      render: (_value: unknown, record: Project) => {
+        const dateStr = record.createdAt || record.created_at
+        if (!dateStr) return '-'
+        try {
+          return new Date(dateStr).toLocaleString()
+        } catch {
+          return '-'
+        }
+      },
+    },
+    {
+      title: '操作',
+      key: 'action',
+      width: 200,
+      render: (_value: unknown, record: Project) => (
+        <Space size="small">
+          <Tooltip title="编辑">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => openEditModal(record)}
+            />
+          </Tooltip>
+          <Tooltip title="编译 Spec">
+            <Button
+              type="text"
+              icon={<FileTextOutlined />}
+              onClick={() => handleCompile(record.id)}
+            />
+          </Tooltip>
+          <Tooltip title="同步到 GitLab">
+            <Button type="text" icon={<SyncOutlined />} />
+          </Tooltip>
+          <Tooltip title="删除">
+            <Popconfirm
+              title="确定要删除此项目吗？"
+              description="删除后相关配置也将被清除"
+              onConfirm={() => handleDelete(record.id)}
+              okText="确定"
+              cancelText="取消"
+            >
+              <Button type="text" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          </Tooltip>
+        </Space>
+      ),
+    },
+  ]
 
   return (
-    <div className="px-4 sm:px-0">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">项目管理</h2>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+    <div style={{ padding: 24 }}>
+      <Card
+        title={
+          <Space>
+            <ProjectOutlined />
+            <span>项目管理</span>
+          </Space>
+        }
+        extra={
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={openCreateModal}
+          >
+            注册项目
+          </Button>
+        }
+      >
+        <Table
+          columns={columns}
+          dataSource={projects}
+          rowKey="id"
+          loading={loading}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total: number) => `共 ${total} 个项目`,
+          }}
+          locale={{
+            emptyText: (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description="暂无项目"
+              >
+                <Button type="primary" onClick={openCreateModal}>
+                  注册第一个项目
+                </Button>
+              </Empty>
+            ),
+          }}
+        />
+      </Card>
+
+      <Modal
+        title={editingProject ? '编辑项目' : '注册项目'}
+        open={modalVisible}
+        onCancel={() => {
+          setModalVisible(false)
+          form.resetFields()
+          setEditingProject(null)
+        }}
+        onOk={() => form.submit()}
+        width={500}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleCreate}
         >
-          + 注册项目
-        </button>
-      </div>
+          <Form.Item
+            name="name"
+            label="项目名称"
+            rules={[{ required: true, message: '请输入项目名称' }]}
+          >
+            <Input placeholder="例如：知行平台前端" />
+          </Form.Item>
 
-      <div className="bg-white shadow overflow-hidden rounded-md">
-        {projects.length === 0 ? (
-          <div className="px-6 py-12 text-center text-gray-500">
-            暂无项目，点击"注册项目"添加第一个项目
-          </div>
-        ) : (
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">项目名称</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">GitLab 路径</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">注册时间</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {projects.map((project) => (
-                <tr key={project.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {project.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {project.gitlabPath || project.gitlab_path || '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {(() => {
-                      const dateStr = project.createdAt || project.created_at
-                      if (!dateStr) return '-'
-                      try {
-                        return new Date(dateStr).toLocaleDateString()
-                      } catch {
-                        return '-'
-                      }
-                    })()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button className="text-blue-600 hover:text-blue-900 mr-3">编辑</button>
-                    <button
-                      onClick={() => handleDelete(project.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      删除
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <Form.Item
+            name="gitlabPath"
+            label="GitLab 路径"
+            rules={[{ required: true, message: '请输入 GitLab 路径' }]}
+          >
+            <Input placeholder="例如：group/project-name" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="项目详情"
+        open={detailModalVisible}
+        onCancel={() => {
+          setDetailModalVisible(false)
+          setViewingProject(null)
+        }}
+        footer={null}
+        width={600}
+      >
+        {viewingProject && (
+          <Descriptions column={1} bordered>
+            <Descriptions.Item label="项目ID">{viewingProject.id}</Descriptions.Item>
+            <Descriptions.Item label="项目名称">{viewingProject.name}</Descriptions.Item>
+            <Descriptions.Item label="GitLab 路径">
+              {viewingProject.gitlabPath || viewingProject.gitlab_path}
+            </Descriptions.Item>
+            <Descriptions.Item label="状态">
+              <Tag color={statusMap[viewingProject.status || 'active']?.color}>
+                {statusMap[viewingProject.status || 'active']?.text}
+              </Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="创建时间">
+              {new Date(viewingProject.createdAt || viewingProject.created_at || '').toLocaleString()}
+            </Descriptions.Item>
+          </Descriptions>
         )}
-      </div>
-
-      {/* 注册项目弹窗 */}
-      {showModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">注册项目</h3>
-            </div>
-            <form onSubmit={handleCreate}>
-              <div className="px-6 py-4 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    项目名称
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    placeholder="输入项目名称"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    GitLab 路径
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.gitlabPath}
-                    onChange={(e) => setFormData({ ...formData, gitlabPath: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    placeholder="例如: group/project-name"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                >
-                  取消
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {submitting ? '保存中...' : '保存'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      </Modal>
     </div>
   )
 }

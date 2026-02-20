@@ -1,206 +1,324 @@
 import { useState, useEffect } from 'react'
+import {
+  Card,
+  Table,
+  Button,
+  Tag,
+  Modal,
+  Form,
+  Input,
+  Select,
+  Space,
+  Popconfirm,
+  message,
+  Empty,
+  Tooltip,
+  Badge,
+} from 'antd'
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  FileTextOutlined,
+  HistoryOutlined,
+} from '@ant-design/icons'
+import type { TableColumnsType } from 'antd'
+
+const { Option } = Select
+const { TextArea } = Input
 
 interface Rule {
   id: string
-  level: string
+  level: 'company' | 'domain' | 'project'
   content: string
   version: number
   createdAt: string
   created_at?: string
+  createdBy?: string
+  created_by?: string
 }
 
-const levelLabels: Record<string, string> = {
-  company: '公司级',
-  domain: '领域级',
-  project: '项目级',
+const levelMap: Record<string, { text: string; color: string }> = {
+  company: { text: '公司级', color: 'red' },
+  domain: { text: '领域级', color: 'orange' },
+  project: { text: '项目级', color: 'green' },
 }
 
 export default function RulesPage() {
   const [rules, setRules] = useState<Rule[]>([])
-  const [loading, setLoading] = useState(true)
-  const [levelFilter, setLevelFilter] = useState('all')
-  const [showModal, setShowModal] = useState(false)
-  const [formData, setFormData] = useState({
-    level: 'company',
-    content: '',
-  })
-  const [submitting, setSubmitting] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [modalVisible, setModalVisible] = useState(false)
+  const [form] = Form.useForm()
+  const [editingRule, setEditingRule] = useState<Rule | null>(null)
+  const [levelFilter, setLevelFilter] = useState<string>('all')
 
   useEffect(() => {
     fetchRules()
   }, [levelFilter])
 
   const fetchRules = async () => {
+    setLoading(true)
     try {
       const params = levelFilter !== 'all' ? `?level=${levelFilter}` : ''
       const res = await fetch(`/api/specs/rules${params}`)
       const data = await res.json()
       if (data.success) {
         setRules(data.data.data || [])
+      } else {
+        message.error(data.error || '获取规则列表失败')
       }
     } catch (error) {
-      console.error('获取规则失败:', error)
+      message.error('网络错误，请检查API服务是否正常')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
+  const handleCreate = async (values: { level: string; content: string }) => {
     try {
-      const res = await fetch('/api/specs/rules', {
-        method: 'POST',
+      const url = editingRule
+        ? `/api/specs/rules/${editingRule.id}`
+        : '/api/specs/rules'
+      const method = editingRule ? 'PUT' : 'POST'
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
-          createdBy: 'user-1', // TODO: 使用实际用户ID
+          ...values,
+          createdBy: 'user-1',
         }),
       })
+
       const data = await res.json()
       if (data.success) {
-        setShowModal(false)
-        setFormData({ level: 'company', content: '' })
+        message.success(editingRule ? '规则更新成功' : '规则创建成功')
+        setModalVisible(false)
+        form.resetFields()
+        setEditingRule(null)
         fetchRules()
       } else {
-        alert(data.error || '创建失败')
+        message.error(data.error || '操作失败')
       }
     } catch (error) {
-      console.error('创建规则失败:', error)
-      alert('创建规则失败')
-    } finally {
-      setSubmitting(false)
+      message.error('网络错误')
     }
   }
 
-  if (loading) return <div className="p-4">加载中...</div>
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/specs/rules/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        message.success('规则删除成功')
+        fetchRules()
+      } else {
+        message.error('删除失败')
+      }
+    } catch (error) {
+      message.error('网络错误')
+    }
+  }
+
+  const openEditModal = (rule: Rule) => {
+    setEditingRule(rule)
+    form.setFieldsValue({
+      level: rule.level,
+      content: rule.content,
+    })
+    setModalVisible(true)
+  }
+
+  const openCreateModal = () => {
+    setEditingRule(null)
+    form.resetFields()
+    setModalVisible(true)
+  }
+
+  const columns: TableColumnsType<Rule> = [
+    {
+      title: '层级',
+      dataIndex: 'level',
+      key: 'level',
+      width: 100,
+      render: (level: string) => {
+        const config = levelMap[level] || { text: level, color: 'default' }
+        return <Tag color={config.color}>{config.text}</Tag>
+      },
+    },
+    {
+      title: '内容',
+      dataIndex: 'content',
+      key: 'content',
+      ellipsis: {
+        showTitle: false,
+      },
+      render: (content: string) => (
+        <Tooltip placement="topLeft" title={content}>
+          <span style={{ whiteSpace: 'pre-wrap' }}>{content}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: '版本',
+      dataIndex: 'version',
+      key: 'version',
+      width: 80,
+      render: (version: number) => (
+        <Badge count={`v${version}`} style={{ backgroundColor: '#52c41a' }} />
+      ),
+    },
+    {
+      title: '创建人',
+      dataIndex: 'createdBy',
+      key: 'createdBy',
+      width: 120,
+      render: (_value: unknown, record: Rule) => record.createdBy || record.created_by || '-',
+    },
+    {
+      title: '创建时间',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: 180,
+      render: (_value: unknown, record: Rule) => {
+        const dateStr = record.createdAt || record.created_at
+        if (!dateStr) return '-'
+        try {
+          return new Date(dateStr).toLocaleString()
+        } catch {
+          return '-'
+        }
+      },
+    },
+    {
+      title: '操作',
+      key: 'action',
+      width: 150,
+      render: (_value: unknown, record: Rule) => (
+        <Space size="small">
+          <Tooltip title="编辑">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => openEditModal(record)}
+            />
+          </Tooltip>
+          <Tooltip title="版本历史">
+            <Button type="text" icon={<HistoryOutlined />} />
+          </Tooltip>
+          <Tooltip title="删除">
+            <Popconfirm
+              title="确定要删除这条规则吗？"
+              description="删除后不可恢复"
+              onConfirm={() => handleDelete(record.id)}
+              okText="确定"
+              cancelText="取消"
+            >
+              <Button type="text" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          </Tooltip>
+        </Space>
+      ),
+    },
+  ]
 
   return (
-    <div className="px-4 sm:px-0">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">Spec 规则管理</h2>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+    <div style={{ padding: 24 }}>
+      <Card
+        title={
+          <Space>
+            <FileTextOutlined />
+            <span>Spec 规则管理</span>
+          </Space>
+        }
+        extra={
+          <Space>
+            <Select
+              value={levelFilter}
+              onChange={setLevelFilter}
+              style={{ width: 120 }}
+              placeholder="全部层级"
+            >
+              <Option value="all">全部层级</Option>
+              <Option value="company">公司级</Option>
+              <Option value="domain">领域级</Option>
+              <Option value="project">项目级</Option>
+            </Select>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={openCreateModal}
+            >
+              新建规则
+            </Button>
+          </Space>
+        }
+      >
+        <Table
+          columns={columns}
+          dataSource={rules}
+          rowKey="id"
+          loading={loading}
+          pagination={{
+            pageSize: 10,
+            showSizeChanger: true,
+            showTotal: (total: number) => `共 ${total} 条`,
+          }}
+          locale={{
+            emptyText: (
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description="暂无规则数据"
+              >
+                <Button type="primary" onClick={openCreateModal}>
+                  创建第一条规则
+                </Button>
+              </Empty>
+            ),
+          }}
+        />
+      </Card>
+
+      <Modal
+        title={editingRule ? '编辑规则' : '新建规则'}
+        open={modalVisible}
+        onCancel={() => {
+          setModalVisible(false)
+          form.resetFields()
+          setEditingRule(null)
+        }}
+        onOk={() => form.submit()}
+        width={600}
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleCreate}
+          initialValues={{ level: 'company' }}
         >
-          + 新建规则
-        </button>
-      </div>
+          <Form.Item
+            name="level"
+            label="规则层级"
+            rules={[{ required: true, message: '请选择规则层级' }]}
+          >
+            <Select placeholder="选择层级">
+              <Option value="company">公司级</Option>
+              <Option value="domain">领域级</Option>
+              <Option value="project">项目级</Option>
+            </Select>
+          </Form.Item>
 
-      {/* 过滤器 */}
-      <div className="mb-4">
-        <select
-          value={levelFilter}
-          onChange={(e) => setLevelFilter(e.target.value)}
-          className="border border-gray-300 rounded-md px-3 py-2"
-        >
-          <option value="all">全部层级</option>
-          <option value="company">公司级</option>
-          <option value="domain">领域级</option>
-          <option value="project">项目级</option>
-        </select>
-      </div>
-
-      {/* 规则列表 */}
-      <div className="bg-white shadow overflow-hidden rounded-md">
-        {rules.length === 0 ? (
-          <div className="px-6 py-12 text-center text-gray-500">
-            暂无规则数据，点击"新建规则"创建第一条规则
-          </div>
-        ) : (
-          <ul className="divide-y divide-gray-200">
-            {rules.map((rule) => (
-              <li key={rule.id} className="px-6 py-4 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className={`
-                      inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                      ${rule.level === 'company' ? 'bg-red-100 text-red-800' : ''}
-                      ${rule.level === 'domain' ? 'bg-yellow-100 text-yellow-800' : ''}
-                      ${rule.level === 'project' ? 'bg-green-100 text-green-800' : ''}
-                    `}>
-                      {levelLabels[rule.level] || rule.level}
-                    </span>
-                    <span className="ml-2 text-sm text-gray-500">版本 {rule.version}</span>
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    {(() => {
-                      const dateStr = rule.createdAt || rule.created_at
-                      if (!dateStr) return '-'
-                      try {
-                        return new Date(dateStr).toLocaleString()
-                      } catch {
-                        return '-'
-                      }
-                    })()}
-                  </div>
-                </div>
-                <div className="mt-2 text-sm text-gray-900">
-                  {rule.content.substring(0, 100)}...
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      {/* 新建规则弹窗 */}
-      {showModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full mx-4">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-medium text-gray-900">新建 Spec 规则</h3>
-            </div>
-            <form onSubmit={handleCreate}>
-              <div className="px-6 py-4 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    规则层级
-                  </label>
-                  <select
-                    value={formData.level}
-                    onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                  >
-                    <option value="company">公司级</option>
-                    <option value="domain">领域级</option>
-                    <option value="project">项目级</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    规则内容 (Markdown)
-                  </label>
-                  <textarea
-                    value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    rows={8}
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    placeholder="# 规则标题\n\n规则内容..."
-                    required
-                  />
-                </div>
-              </div>
-              <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                >
-                  取消
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                >
-                  {submitting ? '保存中...' : '保存'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+          <Form.Item
+            name="content"
+            label="规则内容 (Markdown)"
+            rules={[{ required: true, message: '请输入规则内容' }]}
+          >
+            <TextArea
+              rows={10}
+              placeholder={`# 规则标题\n\n## 适用范围\n- 适用项目：所有项目\n\n## 规范内容\n1. 第一条规范\n2. 第二条规范\n\n## 检查方式\n- 自动化检查\n- 人工审查`}
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   )
 }
