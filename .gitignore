@@ -76,3 +76,6 @@ coverage/
 *.local
 .temp/
 .tmp/
+
+.turbo
+**/.vite
