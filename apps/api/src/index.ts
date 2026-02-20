@@ -9,6 +9,7 @@ import { rulesRoutes } from './routes/rules.js'
 import { compilerRoutes } from './routes/compiler.js'
 import { projectsRoutes } from './routes/projects.js'
 import { usersRoutes } from './routes/users.js'
+import { distributionRoutes } from './routes/distribution.js'
 
 dotenv.config()
 
@@ -40,6 +41,7 @@ async function main() {
   // 注册 Spec 规则路由
   await app.register(rulesRoutes, { prefix: '/api/specs/rules' })
   await app.register(compilerRoutes, { prefix: '/api/specs/compile' })
+  await app.register(distributionRoutes, { prefix: '/api/distribution' })
   await app.register(projectsRoutes, { prefix: '/api/projects' })
   await app.register(usersRoutes, { prefix: '/api/users' })
 
